@@ -1,10 +1,7 @@
 package main
 
 import (
-	"log"
 	"math/rand"
-	"os/exec"
-	"path"
 	"time"
 
 	"github.com/j4rv/cah"
@@ -24,7 +21,6 @@ func main() {
 }
 
 func run() {
-	buildFrontend()
 	sqlite.InitDB("database.sqlite3")
 	stateStore := mem.GetGameStateStore()
 	gameStore := mem.GetGameStore()
@@ -42,16 +38,6 @@ func run() {
 	createTestGames(usecases)
 
 	server.Start(usecases)
-}
-
-func buildFrontend() {
-	command := exec.Command("npm", "run", "build")
-	command.Dir = path.Join(cah.FrontendDir)
-	npmOut, err := command.Output()
-	log.Println(string(npmOut))
-	if err != nil {
-		log.Panic(err)
-	}
 }
 
 // For quick prototyping

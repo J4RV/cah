@@ -1,1 +1,5 @@
-{}
+{
+  "scripts": {
+    "buildFrontend": "npm run build --prefix cahApp/frontend"
+  }
+}
