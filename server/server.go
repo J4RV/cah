@@ -66,6 +66,13 @@ func Start(uc cah.Usecases) {
 }
 
 func StartServer(r *mux.Router) {
+	// For Heroku
+	envPort := os.Getenv("PORT")
+	if envPort != "" {
+		log.Printf("Starting http server in port %s\n", envPort)
+		log.Fatal(http.ListenAndServe(":"+envPort, r))
+	}
+
 	if usingTLS {
 		go func() {
 			log.Printf("Starting http server in port %d\n", port)
