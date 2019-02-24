@@ -39,7 +39,7 @@ func initCertificateStuff() {
 func parseFlags() {
 	flag.IntVar(&port, "port", 80, "Server port for serving HTTP")
 	flag.IntVar(&secureport, "secureport", 443, "Server port for serving HTTPS")
-	flag.StringVar(&publicDir, "dir", "./frontend/build", "the directory to serve files from. Defaults to './frontend/build'")
+	flag.StringVar(&publicDir, "dir", "frontend/build", "the directory to serve files from. Defaults to 'frontend/build'")
 	flag.Parse()
 }
 
