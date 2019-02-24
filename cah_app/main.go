@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/j4rv/cah"
@@ -21,6 +25,7 @@ func main() {
 }
 
 func run() {
+	printRunningDir()
 	sqlite.InitDB("db/database.sqlite3")
 	stateStore := mem.GetGameStateStore()
 	gameStore := mem.GetGameStore()
@@ -38,6 +43,14 @@ func run() {
 	createTestGames(usecases)
 
 	server.Start(usecases)
+}
+
+func printRunningDir() {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(dir)
 }
 
 // For quick prototyping
