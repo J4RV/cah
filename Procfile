@@ -1,2 +1,2 @@
-web: cahApp
+web: cah_app
 release: npm run buildFrontend

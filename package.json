@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "buildFrontend": "cd cahApp/frontend && npm install && npm run build"
+    "buildFrontend": "cd frontend && npm install && npm run build"
   }
 }

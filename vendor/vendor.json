@@ -73,7 +73,7 @@
   ],
   "rootPath": "github.com/j4rv/cah",
   "heroku": {
-    "install": ["./cahApp"],
+    "install": ["./cah_app"],
     "goVersion": "go1.11.3"
   }
 }
