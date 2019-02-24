@@ -21,7 +21,7 @@ func main() {
 }
 
 func run() {
-	sqlite.InitDB("database.sqlite3")
+	sqlite.InitDB("db/database.sqlite3")
 	stateStore := mem.GetGameStateStore()
 	gameStore := mem.GetGameStore()
 	cardStore := mem.GetCardStore()
@@ -74,11 +74,11 @@ func getTestUsers(usecase cah.Usecases) []cah.User {
 }
 
 func populateCards(cardUC cah.CardUsecases) {
-	cardUC.CreateFromFolder(cah.AppDir+"/expansions/base-uk", "Base-UK")
-	cardUC.CreateFromFolder(cah.AppDir+"/expansions/anime", "Anime")
-	cardUC.CreateFromFolder(cah.AppDir+"/expansions/kikis", "Kikis")
-	cardUC.CreateFromFolder(cah.AppDir+"/expansions/expansion-1", "The First Expansion")
-	cardUC.CreateFromFolder(cah.AppDir+"/expansions/expansion-2", "The Second Expansion")
+	cardUC.CreateFromFolder("expansions/base-uk", "Base-UK")
+	cardUC.CreateFromFolder("expansions/anime", "Anime")
+	cardUC.CreateFromFolder("expansions/kikis", "Kikis")
+	cardUC.CreateFromFolder("expansions/expansion-1", "The First Expansion")
+	cardUC.CreateFromFolder("expansions/expansion-2", "The Second Expansion")
 	// to check that it does not break the app
-	cardUC.CreateFromFolder(cah.AppDir+"/expansinos/undefined", "Non existant")
+	cardUC.CreateFromFolder("expansinos/undefined", "Non existant")
 }
