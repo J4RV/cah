@@ -3,8 +3,8 @@ package usecase
 import (
 	"testing"
 
-	"github.com/j4rv/golang-stuff/cah"
-	"github.com/j4rv/golang-stuff/cah/db/mem"
+	"github.com/j4rv/cah"
+	"github.com/j4rv/cah/db/mem"
 	"github.com/stretchr/testify/assert"
 )
 

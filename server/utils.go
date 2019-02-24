@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/j4rv/golang-stuff/cah"
+	"github.com/j4rv/cah"
 )
 
 func writeResponse(w http.ResponseWriter, obj interface{}) {

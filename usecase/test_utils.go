@@ -3,7 +3,7 @@ package usecase
 import (
 	"fmt"
 
-	"github.com/j4rv/golang-stuff/cah"
+	"github.com/j4rv/cah"
 )
 
 // consider using mockery or something similar

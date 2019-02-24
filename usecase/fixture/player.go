@@ -1,6 +1,6 @@
 package fixture
 
-import "github.com/j4rv/golang-stuff/cah"
+import "github.com/j4rv/cah"
 
 func getPlayerFixture(name string) *cah.Player {
 	return &cah.Player{

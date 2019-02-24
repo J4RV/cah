@@ -4,12 +4,12 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/j4rv/golang-stuff/cah"
-	"github.com/j4rv/golang-stuff/cah/db/mem"
-	"github.com/j4rv/golang-stuff/cah/db/sqlite"
-	"github.com/j4rv/golang-stuff/cah/server"
-	"github.com/j4rv/golang-stuff/cah/usecase"
-	"github.com/j4rv/golang-stuff/cah/usecase/fixture"
+	"github.com/j4rv/cah"
+	"github.com/j4rv/cah/db/mem"
+	"github.com/j4rv/cah/db/sqlite"
+	"github.com/j4rv/cah/server"
+	"github.com/j4rv/cah/usecase"
+	"github.com/j4rv/cah/usecase/fixture"
 )
 
 func init() {

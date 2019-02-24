@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/j4rv/golang-stuff/cah"
+	"github.com/j4rv/cah"
 )
 
 type gameController struct {

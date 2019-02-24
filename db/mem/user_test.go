@@ -3,7 +3,7 @@ package mem
 import (
 	"testing"
 
-	"github.com/j4rv/golang-stuff/cah/db/mem/fixture"
+	"github.com/j4rv/cah/db/mem/fixture"
 )
 
 func init() {

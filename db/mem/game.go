@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/j4rv/golang-stuff/cah"
+	"github.com/j4rv/cah"
 )
 
 type gameMemStore struct {

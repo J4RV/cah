@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/j4rv/golang-stuff/cah"
+	"github.com/j4rv/cah"
 
 	"github.com/gorilla/mux"
 )
