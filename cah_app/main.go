@@ -5,7 +5,6 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/j4rv/cah"
@@ -46,11 +45,11 @@ func run() {
 }
 
 func printRunningDir() {
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(dir)
+	fmt.Println("WOKDING DIR", dir)
 }
 
 // For quick prototyping
