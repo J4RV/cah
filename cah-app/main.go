@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"math/rand"
-	"os"
 	"os/exec"
 	"path"
 	"time"
@@ -47,7 +46,7 @@ func run() {
 
 func buildFrontend() {
 	command := exec.Command("npm", "run", "build")
-	command.Dir = path.Join(os.Getenv("GOPATH"), "src", "github.com", "j4rv", "cah", "cah-app", "frontend")
+	command.Dir = path.Join(cah.FrontendDir)
 	npmOut, err := command.Output()
 	log.Println(string(npmOut))
 	if err != nil {
@@ -89,11 +88,11 @@ func getTestUsers(usecase cah.Usecases) []cah.User {
 }
 
 func populateCards(cardUC cah.CardUsecases) {
-	cardUC.CreateFromFolder("./expansions/base-uk", "Base-UK")
-	cardUC.CreateFromFolder("./expansions/anime", "Anime")
-	cardUC.CreateFromFolder("./expansions/kikis", "Kikis")
-	cardUC.CreateFromFolder("./expansions/expansion-1", "The First Expansion")
-	cardUC.CreateFromFolder("./expansions/expansion-2", "The Second Expansion")
+	cardUC.CreateFromFolder(cah.AppDir+"/expansions/base-uk", "Base-UK")
+	cardUC.CreateFromFolder(cah.AppDir+"/expansions/anime", "Anime")
+	cardUC.CreateFromFolder(cah.AppDir+"/expansions/kikis", "Kikis")
+	cardUC.CreateFromFolder(cah.AppDir+"/expansions/expansion-1", "The First Expansion")
+	cardUC.CreateFromFolder(cah.AppDir+"/expansions/expansion-2", "The Second Expansion")
 	// to check that it does not break the app
-	cardUC.CreateFromFolder("./expansinos/undefined", "Non existant")
+	cardUC.CreateFromFolder(cah.AppDir+"/expansinos/undefined", "Non existant")
 }
