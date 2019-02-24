@@ -1,1 +1,1 @@
-web: cah-app
+web: cahApp
