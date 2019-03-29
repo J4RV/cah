@@ -31,6 +31,7 @@ func (control stateController) Create() cah.GameState {
 		DiscardPile:     []*cah.WhiteCard{},
 		WhiteDeck:       []*cah.WhiteCard{},
 		BlackDeck:       []*cah.BlackCard{},
+		UpdateListeners: &[]chan bool{},
 		BlackCardInPlay: nilBlackCard,
 	}
 	ret, err := control.store.Create(ret)
