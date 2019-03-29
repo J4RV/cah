@@ -48,6 +48,7 @@ func (store *stateMemStore) Update(g cah.GameState) error {
 	if err != nil {
 		return err
 	}
+	g.TriggerUptate()
 	store.games[g.ID] = &g
 	return nil
 }

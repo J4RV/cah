@@ -1,5 +1,7 @@
 package cah
 
+import "log"
+
 type GameStateStore interface {
 	Create(GameState) (GameState, error)
 	ByID(id int) (GameState, error)
@@ -26,6 +28,7 @@ type GameState struct {
 	BlackCardInPlay *BlackCard   `json:"blackCardInPlay" db:"blackCardInPlay"`
 	DiscardPile     []*WhiteCard `json:"discardPile" db:"discardPile"`
 	HandSize        int          `json:"handSize" db:"handSize"`
+	UpdateListeners *[]chan bool
 }
 
 func (s *GameState) DrawWhite() *WhiteCard {
@@ -40,6 +43,19 @@ func (s GameState) CurrCzar() *Player {
 
 func (s GameState) IsCurrCzar(u User) bool {
 	return s.CurrCzar().User.ID == u.ID
+}
+
+func (s *GameState) StartListening(c chan bool) {
+	*s.UpdateListeners = append(*s.UpdateListeners, c)
+	log.Println("StartListening,", len(*s.UpdateListeners), "listeners", s.ID)
+}
+
+func (s GameState) TriggerUptate() {
+	log.Println("Update triggered,", len(*s.UpdateListeners), "listeners", s.ID)
+	for i := range *s.UpdateListeners {
+		log.Println("Event triggered once")
+		(*s.UpdateListeners)[i] <- true
+	}
 }
 
 func (s GameState) Equal(other GameState) bool {
@@ -95,5 +111,6 @@ func (s GameState) Clone() GameState {
 	copy(res.BlackDeck, s.BlackDeck)
 	copy(res.WhiteDeck, s.WhiteDeck)
 	copy(res.DiscardPile, s.DiscardPile)
+	res.UpdateListeners = s.UpdateListeners
 	return res
 }
