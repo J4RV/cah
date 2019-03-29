@@ -3,7 +3,6 @@ import React, { Component } from "react"
 import Hand from "../gamestate/Hand"
 import PlayersInfo from "../gamestate/PlayersInfo"
 import Table from "../gamestate/Table"
-import axios from "axios"
 import { connect } from "react-redux"
 import { gameStateWSocketAbsUrl } from "../restUrls"
 import pushError from "../actions/pushError"
@@ -22,10 +21,7 @@ class Game extends Component {
   componentWillMount() {
     const stateID = this.props.stateID
     const sock = new WebSocket(gameStateWSocketAbsUrl(stateID))
-    sock.onmessage = e => {
-      console.log(e)
-      this.setState(JSON.parse(e.data))
-    }
+    sock.onmessage = e => this.setState(JSON.parse(e.data))
   }
 }
 

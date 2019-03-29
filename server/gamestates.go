@@ -55,23 +55,27 @@ type gameStateResponse struct {
 }
 
 func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
-	log.Println("gameStateWebsocket")
 	conn, err := upgrader.Upgrade(w, req, nil)
+	defer func() {
+		if err != nil {
+			log.Println("err en gameStateWebsocket", err)
+		}
+	}()
 	if err != nil {
-		log.Panic(err)
+		return
 	}
 	defer conn.Close()
 	u, err := userFromSession(req)
 	if err != nil {
-		log.Panic(err)
+		return
 	}
 	game, err := gameStateFromRequest(req)
 	if err != nil {
-		log.Panic(err)
+		return
 	}
 	p, err := player(game, u)
 	if err != nil {
-		log.Panic(err)
+		return
 	}
 	eventListener := make(chan bool)
 	game.StartListening(eventListener)
