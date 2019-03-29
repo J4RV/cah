@@ -10,7 +10,7 @@ export const playCardsUrl = stateID => `gamestate/${stateID}/play-cards`
 export const chooseWinnerUrl = stateID => `gamestate/${stateID}/choose-winner`
 
 export const gameStateWSocketAbsUrl = stateID =>
-  `ws://${window.location.host}/rest/gamestate/${stateID}/state-websocket`
+  `wss://${window.location.host}/rest/gamestate/${stateID}/state-websocket`
 
 // Game
 export const openGamesUrl = "game/list-open"
