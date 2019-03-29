@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -12,6 +13,7 @@ import (
 
 func handleGameStates(r *mux.Router) {
 	s := r.PathPrefix("/gamestate/{gameStateID}").Subrouter()
+	s.HandleFunc("/state-websocket", gameStateWebsocket).Methods("GET")
 	s.Handle("/state", srvHandler(gameStateForUser)).Methods("GET")
 	s.Handle("/choose-winner", srvHandler(chooseWinner)).Methods("POST")
 	s.Handle("/play-cards", srvHandler(playCards)).Methods("POST")
@@ -50,6 +52,50 @@ type gameStateResponse struct {
 	BlackCardInPlay cah.BlackCard  `json:"blackCardInPlay"`
 	SinnerPlays     []sinnerPlay   `json:"sinnerPlays"`
 	MyPlayer        fullPlayerInfo `json:"myPlayer"`
+}
+
+func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
+	conn, err := upgrader.Upgrade(w, req, nil)
+	defer func() {
+		if err != nil {
+			log.Println("err en gameStateWebsocket", err)
+		}
+	}()
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+	u, err := userFromSession(req)
+	if err != nil {
+		return
+	}
+	game, err := gameStateFromRequest(req)
+	if err != nil {
+		return
+	}
+	p, err := player(game, u)
+	if err != nil {
+		return
+	}
+	eventListener := make(chan bool)
+	game.StartListening(eventListener)
+	log.Println("User listening: ", u.Username)
+	for {
+		response := gameStateResponse{
+			ID:              game.ID,
+			Phase:           game.Phase.String(),
+			Players:         playersInfoFromGame(game),
+			CurrCzarID:      game.Players[game.CurrCzarIndex].User.ID,
+			BlackCardInPlay: *game.BlackCardInPlay,
+			SinnerPlays:     sinnerPlaysFromGame(game),
+			MyPlayer:        newFullPlayerInfo(*p),
+		}
+		err = conn.WriteJSON(response)
+		if err != nil {
+			return
+		}
+		<-eventListener
+	}
 }
 
 func gameStateForUser(w http.ResponseWriter, req *http.Request) error {
@@ -224,7 +270,7 @@ func gameStateFromRequest(req *http.Request) (cah.GameState, error) {
 	}
 	g, err := usecase.GameState.ByID(id)
 	if err != nil {
-		return g, errors.New("Could not get game state from request")
+		return g, errors.New("Could not get game state from request. ID: " + strID)
 	}
 	return g, nil
 }

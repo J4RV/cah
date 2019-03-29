@@ -10,6 +10,7 @@ import (
 	"github.com/j4rv/cah"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 var port, secureport int
@@ -18,6 +19,11 @@ var serverCert, serverPK string
 var publicDir string
 
 var usecase cah.Usecases
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
 func init() {
 	initCertificateStuff()
