@@ -3,6 +3,8 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -12,6 +14,7 @@ import (
 
 func handleGameStates(r *mux.Router) {
 	s := r.PathPrefix("/gamestate/{gameStateID}").Subrouter()
+	s.HandleFunc("/state-websocket", gameStateWebsocket).Methods("GET")
 	s.Handle("/state", srvHandler(gameStateForUser)).Methods("GET")
 	s.Handle("/choose-winner", srvHandler(chooseWinner)).Methods("POST")
 	s.Handle("/play-cards", srvHandler(playCards)).Methods("POST")
@@ -52,30 +55,83 @@ type gameStateResponse struct {
 	MyPlayer        fullPlayerInfo `json:"myPlayer"`
 }
 
+var gameStateListeners = make(map[int][]*chan *cah.GameState)
+
+func startListening(gsID int, cb *chan *cah.GameState) {
+	gameStateListeners[gsID] = append(gameStateListeners[gsID], cb)
+}
+
+func gameStateUpdated(gs *cah.GameState) {
+	for i := range gameStateListeners[gs.ID] {
+		log.Println("notifying listers of game update, id:", gs.ID)
+		*gameStateListeners[gs.ID][i] <- gs
+	}
+}
+
+func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
+	conn, err := upgrader.Upgrade(w, req, nil)
+	defer func() {
+		log.Println("gameStateWebsocket:", err)
+	}()
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	// First response
+	u, err := userFromSession(req)
+	if err != nil {
+		return
+	}
+	gsID, err := gameStateIDFromRequest(req)
+	if err != nil {
+		return
+	}
+	gameState, err := usecase.GameState.ByID(gsID)
+	p, err := player(gameState, u)
+	if err != nil {
+		return
+	}
+
+	eventListener := make(chan *cah.GameState)
+	startListening(gsID, &eventListener)
+	log.Println("User listening: ", u.Username, "game:", gsID)
+	for {
+		err = conn.WriteJSON(newGameStateResponse(&gameState, p))
+		if err != nil {
+			return
+		}
+		gameState = *<-eventListener
+	}
+}
+
 func gameStateForUser(w http.ResponseWriter, req *http.Request) error {
 	u, err := userFromSession(req)
 	if err != nil {
 		return err
 	}
-	game, err := gameStateFromRequest(req)
+	gameState, err := gameStateFromRequest(req)
 	if err != nil {
 		return err
 	}
-	p, err := player(game, u)
+	p, err := player(gameState, u)
 	if err != nil {
 		return err
 	}
-	response := gameStateResponse{
-		ID:              game.ID,
-		Phase:           game.Phase.String(),
-		Players:         playersInfoFromGame(game),
-		CurrCzarID:      game.Players[game.CurrCzarIndex].User.ID,
-		BlackCardInPlay: *game.BlackCardInPlay,
-		SinnerPlays:     sinnerPlaysFromGame(game),
-		MyPlayer:        newFullPlayerInfo(*p),
-	}
-	writeResponse(w, response)
+	writeResponse(w, newGameStateResponse(&gameState, p))
 	return nil
+}
+
+func newGameStateResponse(gs *cah.GameState, player *cah.Player) *gameStateResponse {
+	return &gameStateResponse{
+		ID:              gs.ID,
+		Phase:           gs.Phase.String(),
+		Players:         playersInfoFromGame(*gs),
+		CurrCzarID:      gs.Players[gs.CurrCzarIndex].User.ID,
+		BlackCardInPlay: *gs.BlackCardInPlay,
+		SinnerPlays:     sinnerPlaysFromGame(*gs),
+		MyPlayer:        newFullPlayerInfo(*player),
+	}
 }
 
 func playersInfoFromGame(game cah.GameState) []playerInfo {
@@ -143,21 +199,22 @@ func chooseWinner(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		return errors.New("Misconstructed payload")
 	}
-	game, err := gameStateFromRequest(req)
+	gs, err := gameStateFromRequest(req)
 	if err != nil {
 		return err
 	}
-	pid, err := playerIndex(game, u)
+	pid, err := playerIndex(gs, u)
 	if err != nil {
 		return err
 	}
-	if pid != game.CurrCzarIndex {
+	if pid != gs.CurrCzarIndex {
 		return errors.New("Only the Czar can choose the winner")
 	}
-	_, err = usecase.GameState.GiveBlackCardToWinner(payload.Winner, game)
+	gs, err = usecase.GameState.GiveBlackCardToWinner(payload.Winner, gs)
 	if err != nil {
 		return err
 	}
+	gameStateUpdated(&gs)
 	return nil
 }
 
@@ -182,18 +239,19 @@ func playCards(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		return errors.New("Misconstructed payload")
 	}
-	game, err := gameStateFromRequest(req)
+	gs, err := gameStateFromRequest(req)
 	if err != nil {
 		return err
 	}
-	pid, err := playerIndex(game, u)
+	pid, err := playerIndex(gs, u)
 	if err != nil {
 		return err
 	}
-	_, err = usecase.GameState.PlayWhiteCards(pid, payload.CardIndexes, game)
+	gs, err = usecase.GameState.PlayWhiteCards(pid, payload.CardIndexes, gs)
 	if err != nil {
 		return err
 	}
+	gameStateUpdated(&gs)
 	return nil
 }
 
@@ -217,14 +275,18 @@ func player(g cah.GameState, u cah.User) (*cah.Player, error) {
 }
 
 func gameStateFromRequest(req *http.Request) (cah.GameState, error) {
-	strID := mux.Vars(req)["gameStateID"]
-	id, err := strconv.Atoi(strID)
+	id, err := gameStateIDFromRequest(req)
 	if err != nil {
 		return cah.GameState{}, err
 	}
 	g, err := usecase.GameState.ByID(id)
 	if err != nil {
-		return g, errors.New("Could not get game state from request")
+		return g, fmt.Errorf("Could not get game state from request. ID: %d", id)
 	}
 	return g, nil
+}
+
+func gameStateIDFromRequest(req *http.Request) (int, error) {
+	strID := mux.Vars(req)["gameStateID"]
+	return strconv.Atoi(strID)
 }
