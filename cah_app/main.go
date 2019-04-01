@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -64,8 +65,8 @@ func createTestGames(usecase cah.Usecases) {
 	g, _ = usecase.Game.ByID(2)
 	usecase.Game.UserJoins(users[2], g)
 	g, _ = usecase.Game.ByID(2)
-	wd := usecase.Card.ExpansionWhites("Base-UK")
-	bd := usecase.Card.ExpansionBlacks("Base-UK")
+	wd := usecase.Card.ExpansionWhites("Base UK")
+	bd := usecase.Card.ExpansionBlacks("Base UK")
 	state := usecase.GameState.Create()
 	err := usecase.Game.Start(g, state,
 		usecase.Game.Options().BlackDeck(bd),
@@ -86,11 +87,17 @@ func getTestUsers(usecase cah.Usecases) []cah.User {
 }
 
 func populateCards(cardUC cah.CardUsecases) {
-	cardUC.CreateFromFolder("expansions/base-uk", "Base-UK")
-	cardUC.CreateFromFolder("expansions/anime", "Anime")
-	cardUC.CreateFromFolder("expansions/kikis", "Kikis")
-	cardUC.CreateFromFolder("expansions/expansion-1", "The First Expansion")
-	cardUC.CreateFromFolder("expansions/expansion-2", "The Second Expansion")
-	// to check that it does not break the app
-	cardUC.CreateFromFolder("expansinos/undefined", "Non existant")
+	files, err := ioutil.ReadDir("expansions")
+	if err != nil {
+		log.Fatal("error while populating cards. Is there an expansions folder in the active dir?", err)
+	}
+	for _, f := range files {
+		if f.IsDir() {
+			log.Println("Loading cards from", f.Name())
+			err := cardUC.CreateFromFolder("expansions/"+f.Name(), f.Name())
+			if err != nil {
+				fmt.Println("Got error while loading cards", err)
+			}
+		}
+	}
 }
