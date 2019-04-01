@@ -22,7 +22,6 @@ class Game extends Component {
     const stateID = this.props.stateID
     const sock = new WebSocket(gameStateWSocketAbsUrl(stateID))
     sock.onmessage = e => {
-      console.debug("updating game state", e)
       this.setState(JSON.parse(e.data))
     }
   }

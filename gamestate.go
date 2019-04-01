@@ -26,7 +26,6 @@ type GameState struct {
 	BlackCardInPlay *BlackCard   `json:"blackCardInPlay" db:"blackCardInPlay"`
 	DiscardPile     []*WhiteCard `json:"discardPile" db:"discardPile"`
 	HandSize        int          `json:"handSize" db:"handSize"`
-	UpdateListeners *[]chan bool
 }
 
 func (s *GameState) DrawWhite() *WhiteCard {
@@ -41,16 +40,6 @@ func (s GameState) CurrCzar() *Player {
 
 func (s GameState) IsCurrCzar(u User) bool {
 	return s.CurrCzar().User.ID == u.ID
-}
-
-func (s *GameState) StartListening(c chan bool) {
-	*s.UpdateListeners = append(*s.UpdateListeners, c)
-}
-
-func (s GameState) TriggerUptate() {
-	for i := range *s.UpdateListeners {
-		(*s.UpdateListeners)[i] <- true
-	}
 }
 
 func (s GameState) Equal(other GameState) bool {
@@ -106,6 +95,5 @@ func (s GameState) Clone() GameState {
 	copy(res.BlackDeck, s.BlackDeck)
 	copy(res.WhiteDeck, s.WhiteDeck)
 	copy(res.DiscardPile, s.DiscardPile)
-	res.UpdateListeners = s.UpdateListeners
 	return res
 }
