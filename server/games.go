@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -232,6 +233,7 @@ func availableExpansions(w http.ResponseWriter, req *http.Request) error {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
 	exps := usecase.Card.AvailableExpansions()
+	sort.Strings(exps)
 	writeResponse(w, exps)
 	return nil
 }
