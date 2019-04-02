@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 
@@ -61,18 +62,25 @@ func startListening(gsID int, cb *chan *cah.GameState) {
 	gameStateListeners[gsID] = append(gameStateListeners[gsID], cb)
 }
 
+func stopListening(gsID int, cb *chan *cah.GameState) {
+	var cbRemoved []*chan *cah.GameState
+	for _, listener := range gameStateListeners[gsID] {
+		if cb == listener {
+			continue
+		}
+		cbRemoved = append(cbRemoved, listener)
+	}
+	gameStateListeners[gsID] = cbRemoved
+}
+
 func gameStateUpdated(gs *cah.GameState) {
 	for i := range gameStateListeners[gs.ID] {
-		log.Println("notifying listers of game update, id:", gs.ID)
 		*gameStateListeners[gs.ID][i] <- gs
 	}
 }
 
 func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 	conn, err := upgrader.Upgrade(w, req, nil)
-	defer func() {
-		log.Println("gameStateWebsocket:", err)
-	}()
 	if err != nil {
 		return
 	}
@@ -95,7 +103,10 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 
 	eventListener := make(chan *cah.GameState)
 	startListening(gsID, &eventListener)
-	log.Println("User listening: ", u.Username, "game:", gsID)
+	log.Println("User started listening:", u.Username, "game:", gsID)
+	defer stopListening(gsID, &eventListener)
+	defer log.Println("User stopped listening:", u.Username, "game:", gsID)
+
 	for {
 		err = conn.WriteJSON(newGameStateResponse(&gameState, p))
 		if err != nil {
@@ -175,6 +186,9 @@ func sinnerPlaysFromGame(game cah.GameState) []sinnerPlay {
 			WhiteCards: dereferenceWhiteCards(p.WhiteCardsInPlay),
 		}
 	}
+	rand.Shuffle(len(ret), func(i, j int) {
+		ret[i], ret[j] = ret[j], ret[i]
+	})
 	return ret
 }
 
