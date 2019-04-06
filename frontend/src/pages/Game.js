@@ -40,8 +40,8 @@ class Game extends Component {
         this.props.pushError("Could not reconnect to server.")
         return
       }
-      this.props.pushError("Server Connection was lost, reconnecting...")
-      setTimeout(() => this.startWebsocket(stateID, retries), 4000 / retries)
+      console.error("Server Connection was lost, reconnecting...")
+      setTimeout(() => this.startWebsocket(stateID, retries), 2000 / retries)
     }
 
     sock.onerror = err => {
