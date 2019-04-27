@@ -7,7 +7,7 @@ const Table = ({ state }) => {
   if (card == null) return null
   return (
     <div className='cah-table'>
-      <Card {...card} isBlack style={{ margin: '0 1rem 1rem 1rem' }} />
+      <Card {...card} isBlack style={{ margin: '.5rem' }} />
       <WhiteCardsPlayed state={state} />
     </div>)
 }
