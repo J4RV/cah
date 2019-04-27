@@ -1,6 +1,6 @@
 {
   "name": "cah-game",
-  "version": "0.1.0",
+  "version": "1.7.2",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^3.8.3",
