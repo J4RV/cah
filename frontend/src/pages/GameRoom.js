@@ -68,7 +68,7 @@ class GameRoom extends Component {
         this.setState({ room: r.data })
         if (r.data.phase === "Not started") {
           // this would be much better with websockets
-          window.setTimeout(this.updateState, 5000)
+          window.setTimeout(this.updateState, 1000)
         }
       })
       .catch(e => this.props.pushError(e))
