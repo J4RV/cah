@@ -4,8 +4,10 @@ El cráter.
 La casa de la abuela.
 Alcalá's Bread Mines.
 The King's litte road.
+El chino de confianza.
+El Piti.
 # Series
-Ore no Imōto ga Konna ni Kawaii Wake ga Nai, also known as Oreimo.
+Oreimo.
 Kirino holding a chocolate heart.
 My Little Pony.
 Bojack Horseman.
@@ -14,8 +16,11 @@ Brooklyn 99.
 Los José Joaquines.
 The entire imouto genre.
 Rule 34 of Thanos.
-Watching School Days.
-# Someone doing something
+O poronga do infinito.
+School Days.
+Las Quintillizas.
+Obscure 'The Simpsons' references. 
+# Pipol
 María recording ASMR for her youtube channel.
 Jurado being salty because he got the liberal role, again.
 Rojo losing a million euros on Bitcoin.
@@ -35,10 +40,15 @@ emosido engañado
 La carita sonriente.
 El Kebab enfrente del Bunny.
 Juntar mesas en el mejor chino de Sevilla.
+Patatas con carne de Sabor Kebab.
+Los bordes de la pizza del Pizza Hut.
 # Juegos
 Los escopetazos de cinco.
 100% Fortnite win-rate.
-UNO, the card game.
+Fortnite's default dance.
+UNO!
+La sentina del Sea of Thieves.
+A 100% IVs, shiny and lucky Kyogre.
 # Others
 Un pollavieja.
 Unga unga unga!
@@ -48,3 +58,11 @@ The Communist Manifesto.
 Corridas de felicidad.
 Po me cuelo.
 El amigo invisible.
+Los Funko Pop!s.
+la cencia que no se ace sola ahi que acerla
+Levantar España.
+La Unión Soviética.
+El baile de la victoria.
+Furrismo nivel 3.
+Sharing your Steam account.
+Pablo's C1.

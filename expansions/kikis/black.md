@@ -21,3 +21,6 @@ Que le jodan a _.
 _ is just _ with a thousand irony layers on top.
 Smells like _ spirit.
 Title of your sextape.
+Mi amigo invisible me ha regalado un Funko de _.
+The last chapter of Elena's lore was about _.
+_ is unbreakable.
