@@ -57,7 +57,9 @@ func (control stateController) End(g cah.GameState) (cah.GameState, error) {
 	return ret, nil
 }
 
+// TODO this method needs some heavy refactoring
 func (control stateController) GiveBlackCardToWinner(wID int, g cah.GameState) (cah.GameState, error) {
+	g.CurrRound++
 	err := giveBlackCardToWinnerChecks(wID, g)
 	if err != nil {
 		return g, err
@@ -73,14 +75,17 @@ func (control stateController) GiveBlackCardToWinner(wID int, g cah.GameState) (
 		return g, fmt.Errorf("Invalid winner id %d", wID)
 	}
 	winner.Points = append(winner.Points, ret.BlackCardInPlay)
+	if (g.CurrRound >= g.MaxRounds){
+		return control.End(ret)
+	}
+	if (len(ret.BlackDeck)) == 0 || (len(ret.WhiteDeck)) == 0 {
+		return control.End(ret)
+	}
 	ret.BlackCardInPlay = nilBlackCard
 	for _, p := range g.Players {
 		p.WhiteCardsInPlay = []*cah.WhiteCard{}
 	}
 	ret, _ = control.nextCzar(ret)
-	if (len(ret.BlackDeck)) == 0 {
-		return control.End(ret)
-	}
 	ret, err = putBlackCardInPlay(ret)
 	if err != nil {
 		return g, err

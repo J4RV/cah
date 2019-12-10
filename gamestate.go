@@ -26,6 +26,8 @@ type GameState struct {
 	BlackCardInPlay *BlackCard   `json:"blackCardInPlay" db:"blackCardInPlay"`
 	DiscardPile     []*WhiteCard `json:"discardPile" db:"discardPile"`
 	HandSize        int          `json:"handSize" db:"handSize"`
+	CurrRound       int          `json:"-" db:"currRound"`
+	MaxRounds       int          `json:"-" db:"maxRounds"`
 }
 
 func (s *GameState) DrawWhite() *WhiteCard {

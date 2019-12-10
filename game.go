@@ -34,6 +34,7 @@ type GameOptions interface {
 	BlackDeck([]*BlackCard) Option
 	HandSize(size int) Option
 	RandomStartingCzar() Option
+	MaxRounds(max int) Option
 }
 
 type Option func(s *GameState)

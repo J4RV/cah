@@ -3,6 +3,7 @@ import React, { Component } from "react"
 import Hand from "../gamestate/Hand"
 import PlayersInfo from "../gamestate/PlayersInfo"
 import Table from "../gamestate/Table"
+import Typography from "@material-ui/core/Typography"
 import { connect } from "react-redux"
 import { gameStateWSocketAbsUrl } from "../restUrls"
 import pushError from "../actions/pushError"
@@ -12,8 +13,30 @@ const MAX_RETRIES_ON_SOCKET_CLOSED = 5
 class Game extends Component {
   render() {
     if (this.state == null) return null
+
+    if (this.state.phase === "Finished") {
+      let winner = this.state.players[0]
+      for (let i in this.state.players) {
+        let player = this.state.players[i]
+        console.log(player)
+        if (player.points.length > winner.points.length) {
+          winner = player
+        }
+      }
+      return (
+        <div className="cah-game">
+          <PlayersInfo state={this.state} />
+          <Typography align="center">
+            <h1>Game finished!</h1>
+            <h2>Winner: {winner.name}</h2>
+          </Typography>
+        </div>
+      )
+    }
+
     return (
       <div className="cah-game">
+        <h2>{this.state.phase}</h2>
         <PlayersInfo state={this.state} />
         <Table state={this.state} />
         <Hand gamestate={this.state} />
@@ -51,7 +74,4 @@ class Game extends Component {
   }
 }
 
-export default connect(
-  null,
-  { pushError }
-)(Game)
+export default connect(null, { pushError })(Game)

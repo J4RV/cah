@@ -47,6 +47,12 @@ func (_ Options) RandomStartingCzar() cah.Option {
 	}
 }
 
+func (_ Options) MaxRounds(max int) cah.Option {
+	return func(s *cah.GameState) {
+		s.MaxRounds = max
+	}
+}
+
 func shuffleB(cards *[]*cah.BlackCard) {
 	if cards == nil {
 		return
