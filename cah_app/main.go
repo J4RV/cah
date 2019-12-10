@@ -59,6 +59,7 @@ func createTestGames(usecase cah.Usecases) {
 	users := getTestUsers(usecase)
 	usecase.Game.Create(users[1], "A long and descriptive game name", "")
 	usecase.Game.Create(users[0], "Amo a juga", "1234")
+	usecase.Game.Create(users[2], "Almost finished", "")
 	// Start the Amo a juga game
 	g, _ := usecase.Game.ByID(2)
 	usecase.Game.UserJoins(users[1], g)
@@ -71,6 +72,20 @@ func createTestGames(usecase cah.Usecases) {
 	err := usecase.Game.Start(g, state,
 		usecase.Game.Options().BlackDeck(bd),
 		usecase.Game.Options().WhiteDeck(wd),
+	)
+	// Start the 	usecase.Game.Create(users[2], "Finished", "")
+	g, _ = usecase.Game.ByID(3)
+	usecase.Game.UserJoins(users[0], g)
+	g, _ = usecase.Game.ByID(3)
+	usecase.Game.UserJoins(users[1], g)
+	g, _ = usecase.Game.ByID(3)
+	wd = usecase.Card.ExpansionWhites("Base UK")
+	bd = usecase.Card.ExpansionBlacks("Base UK")
+	state = usecase.GameState.Create()
+	err = usecase.Game.Start(g, state,
+		usecase.Game.Options().BlackDeck(bd),
+		usecase.Game.Options().WhiteDeck(wd),
+		usecase.Game.Options().MaxRounds(1),
 	)
 	if err != nil {
 		panic(err)
