@@ -75,7 +75,7 @@ func (control stateController) GiveBlackCardToWinner(wID int, g cah.GameState) (
 		return g, fmt.Errorf("Invalid winner id %d", wID)
 	}
 	winner.Points = append(winner.Points, ret.BlackCardInPlay)
-	if (g.CurrRound >= g.MaxRounds){
+	if (g.MaxRounds > 0 && g.CurrRound >= g.MaxRounds){
 		return control.End(ret)
 	}
 	if (len(ret.BlackDeck)) == 0 || (len(ret.WhiteDeck)) == 0 {
