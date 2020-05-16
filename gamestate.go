@@ -10,10 +10,11 @@ type GameStateUsecases interface {
 	ByID(id int) (GameState, error)
 	//FetchOpen() []Game
 	Create() GameState
-	GiveBlackCardToWinner(wId int, g GameState) (GameState, error)
+	GiveBlackCardToWinner(wID int, g GameState) (GameState, error)
 	PlayWhiteCards(p int, cs []int, g GameState) (GameState, error)
 	AllSinnersPlayedTheirCards(g GameState) bool
 	End(g GameState) (GameState, error)
+	PlayRandomWhiteCards(p int, g GameState) (GameState, error)
 }
 
 type GameState struct {

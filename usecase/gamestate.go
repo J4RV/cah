@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/j4rv/cah/lib/rng"
+
 	"github.com/j4rv/cah"
 )
 
@@ -113,21 +115,20 @@ func giveBlackCardToWinnerChecks(w int, s cah.GameState) error {
 	return nil
 }
 
+// PlayWhiteCards checks that the player is able to play those cards in the current gamestate, then calls playWhiteCards
 func (control stateController) PlayWhiteCards(p int, cs []int, g cah.GameState) (cah.GameState, error) {
-	if p < 0 || p >= len(g.Players) {
-		return g, errors.New("Non valid sinner index")
-	}
-	if p == g.CurrCzarIndex {
-		return g, errors.New("The Czar cannot play white cards")
-	}
-	if len(g.Players[p].WhiteCardsInPlay) != 0 {
-		return g, errors.New("You played your card(s) already")
+	if checkErr := PlayWhiteCardsChecks(p, g); checkErr != nil {
+		return g, checkErr
 	}
 	if len(cs) != g.BlackCardInPlay.Blanks {
 		return g, fmt.Errorf("Invalid amount of white cards to play, expected %d but got %d",
 			g.BlackCardInPlay.Blanks,
 			len(cs))
 	}
+	return control.playWhiteCards(p, cs, g)
+}
+
+func (control stateController) playWhiteCards(p int, cs []int, g cah.GameState) (cah.GameState, error) {
 	ret := g.Clone()
 	player := ret.Players[p]
 	newCardsPlayed, err := player.ExtractCardsFromHand(cs)
@@ -143,6 +144,15 @@ func (control stateController) PlayWhiteCards(p int, cs []int, g cah.GameState) 
 		return g, err
 	}
 	return ret, nil
+}
+
+func (control stateController) PlayRandomWhiteCards(p int, g cah.GameState) (cah.GameState, error) {
+	if checkErr := PlayWhiteCardsChecks(p, g); checkErr != nil {
+		return g, checkErr
+	}
+	cardIndexes := rng.RandomDifferentInts(g.BlackCardInPlay.Blanks, 0, len(g.Players[p].Hand))
+	log.Printf("Player %d played random cards: %v", p, cardIndexes)
+	return control.playWhiteCards(p, cardIndexes, g)
 }
 
 func (_ stateController) AllSinnersPlayedTheirCards(s cah.GameState) bool {
@@ -195,4 +205,17 @@ func (_ stateController) nextCzar(s cah.GameState) (cah.GameState, error) {
 		res.CurrCzarIndex = 0
 	}
 	return res, nil
+}
+
+func PlayWhiteCardsChecks(p int, g cah.GameState) error {
+	if p < 0 || p >= len(g.Players) {
+		return errors.New("Non valid sinner index")
+	}
+	if p == g.CurrCzarIndex {
+		return errors.New("The Czar cannot play white cards")
+	}
+	if len(g.Players[p].WhiteCardsInPlay) != 0 {
+		return errors.New("You played your card(s) already")
+	}
+	return nil
 }

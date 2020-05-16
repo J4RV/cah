@@ -29,6 +29,10 @@ class Game extends Component {
           <Typography align="center">
             <h1>Game finished!</h1>
             <h2>Winner: {winner.name}</h2>
+            <h3>Black cards earned:</h3>
+            {winner.points.map((p) => (
+              <p>{p.text}</p>
+            ))}
           </Typography>
         </div>
       )
@@ -52,7 +56,7 @@ class Game extends Component {
   startWebsocket = (stateID, retries) => {
     const sock = new WebSocket(gameStateWSocketAbsUrl(stateID))
 
-    sock.onmessage = e => {
+    sock.onmessage = (e) => {
       this.setState(JSON.parse(e.data))
       retries = MAX_RETRIES_ON_SOCKET_CLOSED
     }
@@ -67,11 +71,14 @@ class Game extends Component {
       setTimeout(() => this.startWebsocket(stateID, retries), 2000 / retries)
     }
 
-    sock.onerror = err => {
+    sock.onerror = (err) => {
       this.props.pushError("Server Connection error: " + err.message)
       sock.close()
     }
   }
 }
 
-export default connect(null, { pushError })(Game)
+export default connect(
+  null,
+  { pushError }
+)(Game)
