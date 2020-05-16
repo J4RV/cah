@@ -108,11 +108,11 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 	defer log.Println("User stopped listening:", u.Username, "game:", gsID)
 
 	for {
-		err = conn.WriteJSON(newGameStateResponse(&gameState, p))
+		err = conn.WriteJSON(newGameStateResponse(gameState, p))
 		if err != nil {
 			return
 		}
-		gameState = *<-eventListener
+		gameState = <-eventListener
 	}
 }
 
@@ -129,7 +129,7 @@ func gameStateForUser(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		return err
 	}
-	writeResponse(w, newGameStateResponse(&gameState, p))
+	writeResponse(w, newGameStateResponse(gameState, p))
 	return nil
 }
 
@@ -137,17 +137,17 @@ func newGameStateResponse(gs *cah.GameState, player *cah.Player) *gameStateRespo
 	return &gameStateResponse{
 		ID:              gs.ID,
 		Phase:           gs.Phase.String(),
-		Players:         playersInfoFromGame(*gs),
+		Players:         playersInfoFromGame(gs),
 		CurrCzarID:      gs.Players[gs.CurrCzarIndex].User.ID,
 		BlackCardInPlay: *gs.BlackCardInPlay,
-		SinnerPlays:     sinnerPlaysFromGame(*gs),
+		SinnerPlays:     sinnerPlaysFromGame(gs),
 		MyPlayer:        newFullPlayerInfo(*player),
 	}
 }
 
-func playersInfoFromGame(game cah.GameState) []playerInfo {
-	ret := make([]playerInfo, len(game.Players))
-	for i, p := range game.Players {
+func playersInfoFromGame(gs *cah.GameState) []playerInfo {
+	ret := make([]playerInfo, len(gs.Players))
+	for i, p := range gs.Players {
 		ret[i] = newPlayerInfo(*p)
 	}
 	return ret
@@ -172,13 +172,13 @@ func newFullPlayerInfo(player cah.Player) fullPlayerInfo {
 	}
 }
 
-func sinnerPlaysFromGame(game cah.GameState) []sinnerPlay {
-	if !usecase.GameState.AllSinnersPlayedTheirCards(game) {
+func sinnerPlaysFromGame(gs *cah.GameState) []sinnerPlay {
+	if !usecase.GameState.AllSinnersPlayedTheirCards(gs) {
 		return []sinnerPlay{}
 	}
-	ret := make([]sinnerPlay, len(game.Players))
-	for i, p := range game.Players {
-		if game.IsCurrCzar(p.User) {
+	ret := make([]sinnerPlay, len(gs.Players))
+	for i, p := range gs.Players {
+		if gs.IsCurrCzar(p.User) {
 			continue
 		}
 		ret[i] = sinnerPlay{
@@ -224,11 +224,11 @@ func chooseWinner(w http.ResponseWriter, req *http.Request) error {
 	if pid != gs.CurrCzarIndex {
 		return errors.New("Only the Czar can choose the winner")
 	}
-	gs, err = usecase.GameState.GiveBlackCardToWinner(payload.Winner, gs)
+	err = usecase.GameState.GiveBlackCardToWinner(payload.Winner, gs)
 	if err != nil {
 		return err
 	}
-	gameStateUpdated(&gs)
+	gameStateUpdated(gs)
 	return nil
 }
 
@@ -261,17 +261,17 @@ func playCards(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		return err
 	}
-	gs, err = usecase.GameState.PlayWhiteCards(pid, payload.CardIndexes, gs)
+	err = usecase.GameState.PlayWhiteCards(pid, payload.CardIndexes, gs)
 	if err != nil {
 		return err
 	}
-	gameStateUpdated(&gs)
+	gameStateUpdated(gs)
 	return nil
 }
 
 // Utils
 
-func playerIndex(g cah.GameState, u cah.User) (int, error) {
+func playerIndex(g *cah.GameState, u cah.User) (int, error) {
 	for i, p := range g.Players {
 		if p.User.ID == u.ID {
 			return i, nil
@@ -280,7 +280,7 @@ func playerIndex(g cah.GameState, u cah.User) (int, error) {
 	return -1, errors.New("You are not playing this game")
 }
 
-func player(g cah.GameState, u cah.User) (*cah.Player, error) {
+func player(g *cah.GameState, u cah.User) (*cah.Player, error) {
 	i, err := playerIndex(g, u)
 	if err != nil {
 		return &cah.Player{}, errors.New("You are not playing this game")
@@ -288,10 +288,10 @@ func player(g cah.GameState, u cah.User) (*cah.Player, error) {
 	return g.Players[i], nil
 }
 
-func gameStateFromRequest(req *http.Request) (cah.GameState, error) {
+func gameStateFromRequest(req *http.Request) (*cah.GameState, error) {
 	id, err := gameStateIDFromRequest(req)
 	if err != nil {
-		return cah.GameState{}, err
+		return &cah.GameState{}, err
 	}
 	g, err := usecase.GameState.ByID(id)
 	if err != nil {

@@ -13,7 +13,7 @@ type GameUsecases interface {
 	AllOpen() []Game
 	InProgressForUser(User) []Game
 	UserJoins(User, Game) error
-	Start(Game, GameState, ...Option) error
+	Start(Game, *GameState, ...Option) error
 	Options() GameOptions
 	//Start(gameID int, options ...Option) error
 }
@@ -25,7 +25,7 @@ type Game struct {
 	Users    []User `gorm:"many2many:game_users;"`
 	Name     string
 	Password string
-	State    GameState
+	State    *GameState
 	StateID  int
 }
 

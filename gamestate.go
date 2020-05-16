@@ -1,20 +1,20 @@
 package cah
 
 type GameStateStore interface {
-	Create(GameState) (GameState, error)
-	ByID(id int) (GameState, error)
-	Update(GameState) error
+	Create(*GameState) (*GameState, error)
+	ByID(id int) (*GameState, error)
+	Update(*GameState) error
 }
 
 type GameStateUsecases interface {
-	ByID(id int) (GameState, error)
+	ByID(id int) (*GameState, error)
 	//FetchOpen() []Game
-	Create() GameState
-	GiveBlackCardToWinner(wID int, g GameState) (GameState, error)
-	PlayWhiteCards(p int, cs []int, g GameState) (GameState, error)
-	AllSinnersPlayedTheirCards(g GameState) bool
-	End(g GameState) (GameState, error)
-	PlayRandomWhiteCards(p int, g GameState) (GameState, error)
+	Create() *GameState
+	GiveBlackCardToWinner(wID int, g *GameState) error
+	PlayWhiteCards(p int, cs []int, g *GameState) error
+	AllSinnersPlayedTheirCards(g *GameState) bool
+	End(g *GameState) error
+	PlayRandomWhiteCards(p int, g *GameState) error
 }
 
 type GameState struct {

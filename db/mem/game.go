@@ -47,7 +47,7 @@ func (store *gameMemStore) ByStatePhase(phases ...cah.Phase) []cah.Game {
 	ret := []cah.Game{}
 	for _, g := range store.games {
 		for _, p := range phases {
-			if g.State.Phase == p {
+			if g.State != nil && g.State.Phase == p {
 				ret = append(ret, g)
 				break
 			}
@@ -59,13 +59,6 @@ func (store *gameMemStore) ByStatePhase(phases ...cah.Phase) []cah.Game {
 func (store *gameMemStore) Update(g cah.Game) error {
 	store.Lock()
 	defer store.Unlock()
-	currG, ok := store.games[g.ID]
-	if !ok {
-		return fmt.Errorf("No game found with ID %d", g.ID)
-	}
 	store.games[g.ID] = g
-	if !currG.State.Equal(g.State) {
-		stateStore.Update(g.State)
-	}
 	return nil
 }

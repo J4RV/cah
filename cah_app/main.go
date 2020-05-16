@@ -91,15 +91,12 @@ func createTestGames(usecase cah.Usecases) {
 	if err != nil {
 		panic(err)
 	}
-	//winnerIndex := 0
 	for i := range g.State.Players {
 		if g.State.CurrCzarIndex == i {
 			continue
 		}
-		g.State, _ = usecase.GameState.PlayRandomWhiteCards(i, g.State)
-		//winnerIndex = i // last player to play its cards, we dont really care about the winner
+		usecase.GameState.PlayRandomWhiteCards(i, g.State)
 	}
-	//g.State, _ = usecase.GameState.GiveBlackCardToWinner(winnerIndex, g.State)
 }
 
 func getTestUsers(usecase cah.Usecases) []cah.User {

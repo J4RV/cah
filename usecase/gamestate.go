@@ -26,8 +26,8 @@ func NewGameStateUsecase(store cah.GameStateStore) *stateController {
 	return &stateController{store: store}
 }
 
-func (control stateController) Create() cah.GameState {
-	ret := cah.GameState{
+func (control stateController) Create() *cah.GameState {
+	ret := &cah.GameState{
 		Players:         []*cah.Player{},
 		HandSize:        10,
 		DiscardPile:     []*cah.WhiteCard{},
@@ -42,65 +42,62 @@ func (control stateController) Create() cah.GameState {
 	return ret
 }
 
-func (control stateController) ByID(id int) (cah.GameState, error) {
+func (control stateController) ByID(id int) (*cah.GameState, error) {
 	return control.store.ByID(id)
 }
 
-func (control stateController) End(g cah.GameState) (cah.GameState, error) {
+func (control stateController) End(g *cah.GameState) error {
 	if g.Phase == cah.Finished {
-		return g, errors.New("Tried to end a game but it has already finished")
+		return errors.New("Tried to end a game but it has already finished")
 	}
-	ret := g.Clone()
-	ret.Phase = cah.Finished
-	err := control.store.Update(ret)
+	g.Phase = cah.Finished
+	err := control.store.Update(g)
 	if err != nil {
-		return g, err
+		return err
 	}
-	return ret, nil
+	return nil
 }
 
 // TODO this method needs some heavy refactoring
-func (control stateController) GiveBlackCardToWinner(wID int, g cah.GameState) (cah.GameState, error) {
-	g.CurrRound++
+func (control stateController) GiveBlackCardToWinner(wID int, g *cah.GameState) error {
 	err := giveBlackCardToWinnerChecks(wID, g)
 	if err != nil {
-		return g, err
+		return err
 	}
-	ret := g.Clone()
 	var winner *cah.Player
-	for _, p := range ret.Players {
+	for _, p := range g.Players {
 		if p.User.ID == wID {
 			winner = p
 		}
 	}
 	if winner == nil {
-		return g, fmt.Errorf("Invalid winner id %d", wID)
+		return fmt.Errorf("Invalid winner id %d", wID)
 	}
-	winner.Points = append(winner.Points, ret.BlackCardInPlay)
-	if (g.MaxRounds > 0 && g.CurrRound >= g.MaxRounds){
-		return control.End(ret)
+	winner.Points = append(winner.Points, g.BlackCardInPlay)
+	if g.MaxRounds > 0 && g.CurrRound >= g.MaxRounds {
+		return control.End(g)
 	}
-	if (len(ret.BlackDeck)) == 0 || (len(ret.WhiteDeck)) == 0 {
-		return control.End(ret)
+	if (len(g.BlackDeck)) == 0 || (len(g.WhiteDeck)) == 0 {
+		return control.End(g)
 	}
-	ret.BlackCardInPlay = nilBlackCard
+	g.BlackCardInPlay = nilBlackCard
 	for _, p := range g.Players {
 		p.WhiteCardsInPlay = []*cah.WhiteCard{}
 	}
-	ret, _ = control.nextCzar(ret)
-	ret, err = putBlackCardInPlay(ret)
+	_ = control.nextCzar(g)
+	err = putBlackCardInPlay(g)
 	if err != nil {
-		return g, err
+		return err
 	}
-	playersDraw(&ret)
-	err = control.store.Update(ret)
+	playersDraw(g)
+	err = control.store.Update(g)
 	if err != nil {
-		return g, err
+		return err
 	}
-	return ret, nil
+	return nil
 }
 
-func giveBlackCardToWinnerChecks(w int, s cah.GameState) error {
+func giveBlackCardToWinnerChecks(w int, s *cah.GameState) error {
 	if s.Phase != cah.CzarChoosingWinner {
 		return fmt.Errorf("Tried to choose a winner in a non valid phase '%d'", s.Phase)
 	}
@@ -116,46 +113,45 @@ func giveBlackCardToWinnerChecks(w int, s cah.GameState) error {
 }
 
 // PlayWhiteCards checks that the player is able to play those cards in the current gamestate, then calls playWhiteCards
-func (control stateController) PlayWhiteCards(p int, cs []int, g cah.GameState) (cah.GameState, error) {
+func (control stateController) PlayWhiteCards(p int, cs []int, g *cah.GameState) error {
 	if checkErr := PlayWhiteCardsChecks(p, g); checkErr != nil {
-		return g, checkErr
+		return checkErr
 	}
 	if len(cs) != g.BlackCardInPlay.Blanks {
-		return g, fmt.Errorf("Invalid amount of white cards to play, expected %d but got %d",
+		return fmt.Errorf("Invalid amount of white cards to play, expected %d but got %d",
 			g.BlackCardInPlay.Blanks,
 			len(cs))
 	}
 	return control.playWhiteCards(p, cs, g)
 }
 
-func (control stateController) playWhiteCards(p int, cs []int, g cah.GameState) (cah.GameState, error) {
-	ret := g.Clone()
-	player := ret.Players[p]
+func (control stateController) playWhiteCards(p int, cs []int, gs *cah.GameState) error {
+	player := gs.Players[p]
 	newCardsPlayed, err := player.ExtractCardsFromHand(cs)
 	if err != nil {
-		return ret, err
+		return err
 	}
 	player.WhiteCardsInPlay = append(player.WhiteCardsInPlay, newCardsPlayed...)
-	if control.AllSinnersPlayedTheirCards(ret) {
-		ret.Phase = cah.CzarChoosingWinner
+	if control.AllSinnersPlayedTheirCards(gs) {
+		gs.Phase = cah.CzarChoosingWinner
 	}
-	err = control.store.Update(ret)
+	err = control.store.Update(gs)
 	if err != nil {
-		return g, err
+		return err
 	}
-	return ret, nil
+	return nil
 }
 
-func (control stateController) PlayRandomWhiteCards(p int, g cah.GameState) (cah.GameState, error) {
+func (control stateController) PlayRandomWhiteCards(p int, g *cah.GameState) error {
 	if checkErr := PlayWhiteCardsChecks(p, g); checkErr != nil {
-		return g, checkErr
+		return checkErr
 	}
 	cardIndexes := rng.RandomDifferentInts(g.BlackCardInPlay.Blanks, 0, len(g.Players[p].Hand))
 	log.Printf("Player %d played random cards: %v", p, cardIndexes)
 	return control.playWhiteCards(p, cardIndexes, g)
 }
 
-func (_ stateController) AllSinnersPlayedTheirCards(s cah.GameState) bool {
+func (_ stateController) AllSinnersPlayedTheirCards(s *cah.GameState) bool {
 	for i, p := range s.Players {
 		if i == s.CurrCzarIndex {
 			continue
@@ -175,39 +171,38 @@ func playersDraw(s *cah.GameState) {
 	}
 }
 
-func putBlackCardInPlay(g cah.GameState) (cah.GameState, error) {
+func putBlackCardInPlay(g *cah.GameState) error {
 	if g.BlackCardInPlay != nilBlackCard {
-		return g, errors.New("Tried to put a black card in play but there is already a black card in play")
+		return errors.New("Tried to put a black card in play but there is already a black card in play")
 	}
 	if g.Phase == cah.Finished {
-		return g, errors.New("Tried to put a black card in play but the game has already finished")
+		return errors.New("Tried to put a black card in play but the game has already finished")
 	}
 	if len(g.BlackDeck) == 0 {
-		return g, errorEmptyBlackDeck{}
+		return errorEmptyBlackDeck{}
 	}
-	ret := g.Clone()
-	ret.BlackCardInPlay = ret.BlackDeck[0]
-	ret.BlackDeck = ret.BlackDeck[1:]
-	ret.Phase = cah.SinnersPlaying
-	return ret, nil
+	g.BlackCardInPlay = g.BlackDeck[0]
+	g.BlackDeck = g.BlackDeck[1:]
+	g.Phase = cah.SinnersPlaying
+	g.CurrRound++
+	return nil
 }
 
-func (_ stateController) nextCzar(s cah.GameState) (cah.GameState, error) {
-	if s.BlackCardInPlay != nilBlackCard {
-		return s, errors.New("Tried to rotate to the next Czar but there is still a black card in play")
+func (_ stateController) nextCzar(gs *cah.GameState) error {
+	if gs.BlackCardInPlay != nilBlackCard {
+		return errors.New("Tried to rotate to the next Czar but there is still a black card in play")
 	}
-	if s.Phase == cah.Finished {
-		return s, errors.New("Tried to rotate to the next Czar but the game has already finished")
+	if gs.Phase == cah.Finished {
+		return errors.New("Tried to rotate to the next Czar but the game has already finished")
 	}
-	res := s.Clone()
-	res.CurrCzarIndex++
-	if res.CurrCzarIndex == len(s.Players) {
-		res.CurrCzarIndex = 0
+	gs.CurrCzarIndex++
+	if gs.CurrCzarIndex == len(gs.Players) {
+		gs.CurrCzarIndex = 0
 	}
-	return res, nil
+	return nil
 }
 
-func PlayWhiteCardsChecks(p int, g cah.GameState) error {
+func PlayWhiteCardsChecks(p int, g *cah.GameState) error {
 	if p < 0 || p >= len(g.Players) {
 		return errors.New("Non valid sinner index")
 	}

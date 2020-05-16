@@ -71,25 +71,24 @@ func (control gameController) UserJoins(user cah.User, game cah.Game) error {
 	return control.store.Update(game)
 }
 
-func (control gameController) Start(g cah.Game, state cah.GameState, opts ...cah.Option) error {
+func (control gameController) Start(g cah.Game, state *cah.GameState, opts ...cah.Option) error {
 	if len(g.Users) < 3 {
 		return fmt.Errorf("The minimum amount of players to start a game is 3, got: %d", len(g.Users))
 	}
-	s := g.State
-	if s.ID != 0 {
-		return fmt.Errorf("Tried to start a game but it already has a state. State ID '%d'", s.ID)
+	if g.State != nil && g.State.ID != 0 {
+		return fmt.Errorf("Tried to start a game but it already has a state. State ID '%d'", g.State.ID)
 	}
 	players := make([]*cah.Player, len(g.Users))
 	for i, u := range g.Users {
 		players[i] = cah.NewPlayer(u)
 	}
 	state.Players = players
-	applyOptions(&state, opts...)
-	state, err := putBlackCardInPlay(state)
+	applyOptions(state, opts...)
+	err := putBlackCardInPlay(state)
 	if err != nil {
 		return err
 	}
-	playersDraw(&state)
+	playersDraw(state)
 	g.State = state
 	err = control.store.Update(g)
 	if err != nil {
