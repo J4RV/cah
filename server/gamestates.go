@@ -54,6 +54,8 @@ type gameStateResponse struct {
 	BlackCardInPlay cah.BlackCard  `json:"blackCardInPlay"`
 	SinnerPlays     []sinnerPlay   `json:"sinnerPlays"`
 	MyPlayer        fullPlayerInfo `json:"myPlayer"`
+	CurrRound       int            `json:"currRound"`
+	MaxRounds       int            `json:"maxRounds"`
 }
 
 var gameStateListeners = make(map[int][]*chan *cah.GameState)
@@ -142,6 +144,8 @@ func newGameStateResponse(gs *cah.GameState, player *cah.Player) *gameStateRespo
 		BlackCardInPlay: *gs.BlackCardInPlay,
 		SinnerPlays:     sinnerPlaysFromGame(gs),
 		MyPlayer:        newFullPlayerInfo(*player),
+		CurrRound:       gs.CurrRound,
+		MaxRounds:       gs.MaxRounds,
 	}
 }
 

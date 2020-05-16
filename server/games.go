@@ -162,6 +162,7 @@ type startGamePayload struct {
 	Expansions      []string `json:"expansions"`
 	HandSize        int      `json:"handSize"`
 	RandomFirstCzar bool     `json:"randomFirstCzar,omitempty"`
+	MaxRounds       int      `json:"maxRounds"`
 }
 
 func startGame(w http.ResponseWriter, req *http.Request) error {
@@ -223,6 +224,7 @@ func optionsFromCreateRequest(payload startGamePayload) ([]cah.Option, error) {
 	if payload.RandomFirstCzar {
 		ret = append(ret, usecase.Game.Options().RandomStartingCzar())
 	}
+	ret = append(ret, usecase.Game.Options().MaxRounds(payload.MaxRounds))
 	return ret, nil
 }
 

@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 
+import ExtraGameInfo from "../gamestate/ExtraGameInfo"
 import Hand from "../gamestate/Hand"
 import PlayersInfo from "../gamestate/PlayersInfo"
 import Table from "../gamestate/Table"
@@ -40,10 +41,13 @@ class Game extends Component {
 
     return (
       <div className="cah-game">
-        <h2>{this.state.phase}</h2>
+        <Typography align="center">
+          <h2>{this.state.phase}</h2>
+        </Typography>
         <PlayersInfo state={this.state} />
         <Table state={this.state} />
         <Hand gamestate={this.state} />
+        <ExtraGameInfo state={this.state} />
       </div>
     )
   }
