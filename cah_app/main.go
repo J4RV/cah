@@ -59,7 +59,7 @@ func createTestGames(usecase cah.Usecases) {
 	users := getTestUsers(usecase)
 	usecase.Game.Create(users[1], "A long and descriptive game name", "")
 	usecase.Game.Create(users[0], "Amo a juga", "1234")
-	usecase.Game.Create(users[2], "Almost finished", "")
+	usecase.Game.Create(users[0], "Almost finished", "")
 	// Start the Amo a juga game
 	g, _ := usecase.Game.ByID(2)
 	usecase.Game.UserJoins(users[1], g)
@@ -75,9 +75,9 @@ func createTestGames(usecase cah.Usecases) {
 	)
 	// Start the 	usecase.Game.Create(users[2], "Finished", "")
 	g, _ = usecase.Game.ByID(3)
-	usecase.Game.UserJoins(users[0], g)
-	g, _ = usecase.Game.ByID(3)
 	usecase.Game.UserJoins(users[1], g)
+	g, _ = usecase.Game.ByID(3)
+	usecase.Game.UserJoins(users[2], g)
 	g, _ = usecase.Game.ByID(3)
 	wd = usecase.Card.ExpansionWhites("Base UK")
 	bd = usecase.Card.ExpansionBlacks("Base UK")
@@ -87,9 +87,19 @@ func createTestGames(usecase cah.Usecases) {
 		usecase.Game.Options().WhiteDeck(wd),
 		usecase.Game.Options().MaxRounds(1),
 	)
+	g, _ = usecase.Game.ByID(3)
 	if err != nil {
 		panic(err)
 	}
+	//winnerIndex := 0
+	for i := range g.State.Players {
+		if g.State.CurrCzarIndex == i {
+			continue
+		}
+		g.State, _ = usecase.GameState.PlayRandomWhiteCards(i, g.State)
+		//winnerIndex = i // last player to play its cards, we dont really care about the winner
+	}
+	//g.State, _ = usecase.GameState.GiveBlackCardToWinner(winnerIndex, g.State)
 }
 
 func getTestUsers(usecase cah.Usecases) []cah.User {
