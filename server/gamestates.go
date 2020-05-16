@@ -52,6 +52,8 @@ type gameStateResponse struct {
 	Players         []playerInfo   `json:"players"`
 	CurrCzarID      int            `json:"currentCzarID"`
 	BlackCardInPlay cah.BlackCard  `json:"blackCardInPlay"`
+	BlackCardsLeft  int            `json:"blackCardsLeft"`
+	WhiteCardsLeft  int            `json:"whiteCardsLeft"`
 	SinnerPlays     []sinnerPlay   `json:"sinnerPlays"`
 	MyPlayer        fullPlayerInfo `json:"myPlayer"`
 	CurrRound       int            `json:"currRound"`
@@ -142,6 +144,8 @@ func newGameStateResponse(gs *cah.GameState, player *cah.Player) *gameStateRespo
 		Players:         playersInfoFromGame(gs),
 		CurrCzarID:      gs.Players[gs.CurrCzarIndex].User.ID,
 		BlackCardInPlay: *gs.BlackCardInPlay,
+		BlackCardsLeft:  len(gs.BlackDeck),
+		WhiteCardsLeft:  len(gs.WhiteDeck),
 		SinnerPlays:     sinnerPlaysFromGame(gs),
 		MyPlayer:        newFullPlayerInfo(*player),
 		CurrRound:       gs.CurrRound,

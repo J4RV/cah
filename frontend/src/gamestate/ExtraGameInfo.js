@@ -15,7 +15,15 @@ const ExtraGameInfo = ({ state, classes }) => {
   return (
     <Typography align="center">
       <div className={classes.container}>
-        <p>Round: {roundText}</p>
+        <p>
+          <b>Round:</b> {roundText}
+        </p>
+        <p>
+          <b>Black cards left:</b> {state.blackCardsLeft}
+        </p>
+        <p>
+          <b>White cards left:</b> {state.whiteCardsLeft}
+        </p>
       </div>
     </Typography>
   )
