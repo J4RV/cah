@@ -30,6 +30,7 @@ func (control gameController) Create(owner cah.User, name, pass string) error {
 		UserID: owner.ID,
 		Name:   trimmed,
 		Users:  []cah.User{owner},
+		State:  &cah.GameState{},
 	}
 	trimmedPass := strings.TrimSpace(pass)
 	if trimmedPass != "" {
@@ -75,7 +76,10 @@ func (control gameController) Start(g cah.Game, state *cah.GameState, opts ...ca
 	if len(g.Users) < 3 {
 		return fmt.Errorf("The minimum amount of players to start a game is 3, got: %d", len(g.Users))
 	}
-	if g.State != nil && g.State.ID != 0 {
+	if g.State == nil {
+		return fmt.Errorf("Tried to start a game but it does not have any State")
+	}
+	if g.State.ID != 0 {
 		return fmt.Errorf("Tried to start a game but it already has a state. State ID '%d'", g.State.ID)
 	}
 	players := make([]*cah.Player, len(g.Users))
