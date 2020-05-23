@@ -5,7 +5,7 @@ Un LAGAAAAZOOOOO.
 Darle dinero a Rito.
 Ekko XXTENTATION.
 Akali KDA.
-Lee Sin vendiendo cupones.
+Lee Sin vendecupones.
 Yisus.
 Malphite trébol.
 Vanguard.
@@ -42,3 +42,10 @@ El carro de LaChicaPatata.
 
 PiantadelTea, Nautilus main since beta.
 El Matuxa rankeando con Amumu.
+
+La S-palabra.
+Las smurf.
+Un reporte por decir "gg ez".
+Una cagada de digimon.
+Megadramón.
+Las peras.

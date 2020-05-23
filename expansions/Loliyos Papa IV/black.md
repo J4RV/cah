@@ -9,3 +9,6 @@ _ está muy roto, se merece un nerfeazo.
 Riot ha anunciado dos nuevas Star Guardians: _ y _.
 ¿_ y _?. Joder, vaya botlane.
 No veas _, metiéndose _ por el culo.
+Estoy aburrido, voy a ver el streaming de _.
+Tierlist! S: _. A: _. F: _.
+Vaya mierda _, a ver cuando lo bufan.
