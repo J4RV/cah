@@ -1,0 +1,31 @@
+{{define "style"}}
+<style>
+.main {
+  text-align: center;
+  margin-top: 24px;
+}
+.login-form {
+  margin-top: 48px;
+}
+</style>
+{{end}}
+
+{{define "content"}}
+
+<div class="main">
+  <h2>Cards Against Humanity</h2>
+  <h4>A party game for horrible people.</h4>
+  <form class="login-form">
+    <div class="card black-card floating">
+      <p>I'm _ and my password is _.</p>
+      <p class="card-expansion-text">Security questions</p>
+    </div>
+  </form>
+</div>
+
+<script>
+randomRotateCards()
+</script>
+
+{{end}}
+

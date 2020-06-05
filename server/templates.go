@@ -8,8 +8,14 @@ import (
 
 type tmplID int
 
-const tmplsFolder = "templates/"
-const baseTmpl = tmplsFolder + "layout/base.html"
+const tmplDir = "templates/"
+
+var tmplBase = []string{
+	tmplDir + "layout/base.gohtml",
+	tmplDir + "layout/base-style.gohtml",
+	tmplDir + "layout/base-js.gohtml",
+	tmplDir + "layout/css-reset.gohtml",
+}
 
 // Template definitions
 
@@ -18,7 +24,7 @@ const (
 )
 
 var templateFiles = map[tmplID][]string{
-	loginPageTmpl: {baseTmpl, tmplsFolder + "login.html"},
+	loginPageTmpl: append(tmplBase, tmplDir+"login.gohtml"),
 }
 
 // Functions to be called from outside this file to render the templates:
