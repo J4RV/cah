@@ -45,11 +45,6 @@ func processLogin(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, "/", http.StatusFound)
 }
 
-type registerPayload struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 func processRegister(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	username := req.Form["username"]
@@ -102,10 +97,20 @@ const userid = "user_id"
 
 func init() {
 	skey := os.Getenv("SESSION_KEY")
+	encKey := os.Getenv("COOKIE_ENCRIPTION_KEY")
+
 	if skey == "" {
 		panic("Please set SESSION_KEY environment variable; it is needed to have secure cookies")
 	}
-	cookies = sessions.NewCookieStore([]byte(skey))
+	if encKey == "" && !devMode {
+		panic("Please set COOKIE_ENCRIPTION_KEY for production instances. Must be 16 or 32 bytes long.")
+	}
+
+	if encKey == "" {
+		cookies = sessions.NewCookieStore([]byte(skey))
+	} else {
+		cookies = sessions.NewCookieStore([]byte(skey), []byte(encKey))
+	}
 }
 
 func userFromSession(r *http.Request) (cah.User, error) {
