@@ -6,6 +6,16 @@
 }
 .login-form {
   margin-top: 48px;
+  display: grid;
+  justify-content: center;
+  grid-template-columns: repeat(2, auto);
+  grid-gap: 16px;
+}
+.col-2 {
+  grid-column: 2;
+}
+.login-btn {
+  margin: 0 8px;
 }
 </style>
 {{end}}
@@ -15,11 +25,24 @@
 <div class="main">
   <h2>Cards Against Humanity</h2>
   <h4>A party game for horrible people.</h4>
-  <form class="login-form">
+  <form class="login-form" action="/api/user/login" method="post">
     <div class="card black-card floating">
       <p>I'm _ and my password is _.</p>
       <p class="card-expansion-text">Security questions</p>
     </div>
+    <div class="card white-card floating">
+      <div>
+        <label for="username">Username</label>
+        <input id="username" name="username" required="" type="text">
+      </div>
+      <div>
+        <label for="password">Password</label>
+        <input id="password" name="password" required="" type="password">
+      </div>
+      <p class="card-expansion-text">Security questions</p>
+    </div>
+    <button class="login-btn col-2 primary-button">LOG IN</button>
+    <button class="login-btn col-2">REGISTER</button>
   </form>
 </div>
 

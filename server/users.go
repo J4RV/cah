@@ -24,7 +24,7 @@ type loginPayload struct {
 	Password string `json:"password"`
 }
 
-func processLogin(w http.ResponseWriter, req *http.Request) {
+/*func processLogin(w http.ResponseWriter, req *http.Request) {
 	var payload loginPayload
 	decoder := json.NewDecoder(req.Body)
 	err := decoder.Decode(&payload)
@@ -44,6 +44,33 @@ func processLogin(w http.ResponseWriter, req *http.Request) {
 	log.Printf("User %s with id %d just logged in!", u.Username, u.ID)
 	// everything ok, back to index with your brand new session!
 	writeResponse(w, u)
+}*/
+
+func processLogin(w http.ResponseWriter, req *http.Request) {
+	req.ParseForm()
+	username := req.Form["username"]
+	password := req.Form["password"]
+	if len(username) != 1 || len(password) != 1 {
+		http.Error(w, "Unexpected amount of form vals.", http.StatusUnauthorized)
+		return
+	}
+	u, ok := usecase.User.Login(username[0], password[0])
+	if !ok {
+		log.Printf("%s tried to login using user '%s'", req.RemoteAddr, username)
+		http.Error(w, "The username and password you entered did not match our records.", http.StatusUnauthorized)
+		return
+	}
+	session, err := cookies.Get(req, sessionid)
+	if err != nil {
+		log.Printf("Failed at getting the cookie.")
+		http.Error(w, "Failed at getting the cookie", http.StatusBadRequest)
+		return
+	}
+	session.Values[userid] = u.ID
+	session.Save(req, w)
+	log.Printf("User %s with id %d just logged in!", u.Username, u.ID)
+	// everything ok, back to index with your brand new session!
+	http.Redirect(w, req, "/", http.StatusFound)
 }
 
 type registerPayload struct {

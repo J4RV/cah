@@ -32,14 +32,33 @@ var templateFiles = map[tmplID][]string{
 var compiledTemplates = map[tmplID]*template.Template{}
 
 func execTemplate(id tmplID, w io.Writer, data interface{}) {
-	if devMode {
-		template.Must(template.ParseFiles(templateFiles[id]...)).Execute(w, data)
-		return
+	if compiledTemplates[id] == nil {
+		compiledTemplates[id] = parseTemplate(id)
 	}
 
-	if compiledTemplates[id] == nil {
-		log.Println("Compiling template with id: ", id)
-		compiledTemplates[id] = template.Must(template.ParseFiles(templateFiles[id]...))
+	err := compiledTemplates[id].Execute(w, data)
+	if err != nil {
+		log.Println("Error while executing template", id, err)
 	}
-	compiledTemplates[id].Execute(w, data)
+
+	if devMode {
+		// In development mode, dont store the compiled templates
+		compiledTemplates[id] = nil
+	}
+}
+
+func parseTemplate(id tmplID) *template.Template {
+	log.Println("Parsing template with id: ", id)
+	return template.Must(template.New("base.gohtml").Funcs(template.FuncMap{
+		"safeHTML": safeHTML,
+		"safeCSS":  safeCSS,
+	}).ParseFiles(templateFiles[id]...))
+}
+
+func safeHTML(b string) template.HTML {
+	return template.HTML(b)
+}
+
+func safeCSS(b string) template.CSS {
+	return template.CSS(b)
 }
