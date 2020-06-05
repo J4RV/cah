@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,33 +17,6 @@ import (
 func loginPageHandler(w http.ResponseWriter, req *http.Request) {
 	execTemplate(loginPageTmpl, w, nil)
 }
-
-type loginPayload struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-/*func processLogin(w http.ResponseWriter, req *http.Request) {
-	var payload loginPayload
-	decoder := json.NewDecoder(req.Body)
-	err := decoder.Decode(&payload)
-	if err != nil {
-		http.Error(w, "Misconstructed payload", http.StatusBadRequest)
-		return
-	}
-	u, ok := usecase.User.Login(payload.Username, payload.Password)
-	if !ok {
-		log.Printf("%s tried to login using user '%s'", req.RemoteAddr, payload.Username)
-		http.Error(w, "The username and password you entered did not match our records.", http.StatusUnauthorized)
-		return
-	}
-	session, err := cookies.Get(req, sessionid)
-	session.Values[userid] = u.ID
-	session.Save(req, w)
-	log.Printf("User %s with id %d just logged in!", u.Username, u.ID)
-	// everything ok, back to index with your brand new session!
-	writeResponse(w, u)
-}*/
 
 func processLogin(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
@@ -79,16 +51,16 @@ type registerPayload struct {
 }
 
 func processRegister(w http.ResponseWriter, req *http.Request) {
-	var payload registerPayload
-	decoder := json.NewDecoder(req.Body)
-	err := decoder.Decode(&payload)
-	if err != nil {
-		http.Error(w, "Misconstructed payload", http.StatusBadRequest)
+	req.ParseForm()
+	username := req.Form["username"]
+	password := req.Form["password"]
+	if len(username) != 1 || len(password) != 1 {
+		http.Error(w, "Unexpected amount of form vals.", http.StatusUnauthorized)
 		return
 	}
-	u, err := usecase.User.Register(payload.Username, payload.Password)
+	u, err := usecase.User.Register(username[0], password[0])
 	if err != nil {
-		log.Printf("%s tried to register using user '%s'", req.RemoteAddr, payload.Username)
+		log.Printf("%s tried to register using user '%s'", req.RemoteAddr, username[0])
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
@@ -96,7 +68,8 @@ func processRegister(w http.ResponseWriter, req *http.Request) {
 	session.Values[userid] = u.ID
 	session.Save(req, w)
 	log.Printf("User %s with id %d just registered!", u.Username, u.ID)
-	writeResponse(w, u)
+	// everything ok, back to index with your brand new session!
+	http.Redirect(w, req, "/", http.StatusFound)
 }
 
 func processLogout(w http.ResponseWriter, req *http.Request) {

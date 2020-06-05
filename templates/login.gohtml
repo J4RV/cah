@@ -25,7 +25,7 @@
 <div class="main">
   <h2>Cards Against Humanity</h2>
   <h4>A party game for horrible people.</h4>
-  <form class="login-form" action="/api/user/login" method="post">
+  <form class="login-form" method="post">
     <div class="card black-card floating">
       <p>I'm _ and my password is _.</p>
       <p class="card-expansion-text">Security questions</p>
@@ -41,8 +41,8 @@
       </div>
       <p class="card-expansion-text">Security questions</p>
     </div>
-    <button class="login-btn col-2 primary-button">LOG IN</button>
-    <button class="login-btn col-2">REGISTER</button>
+    <button formaction="/api/user/login" class="login-btn col-2 primary-button">LOG IN</button>
+    <button formaction="/api/user/register" class="login-btn col-2">REGISTER</button>
   </form>
 </div>
 
