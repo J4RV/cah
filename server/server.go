@@ -51,6 +51,7 @@ func parseFlags() {
 	flag.Parse()
 }
 
+// Start creates and starts the server with the provided usecases
 func Start(uc cah.Usecases) {
 	usecase = uc
 
@@ -73,7 +74,7 @@ func Start(uc cah.Usecases) {
 }
 
 func setRestRouterHandlers(r *mux.Router) {
-	restRouter := r.PathPrefix("/rest").Subrouter()
+	restRouter := r.PathPrefix("/api").Subrouter()
 
 	{
 		s := restRouter.PathPrefix("/user").Subrouter()
