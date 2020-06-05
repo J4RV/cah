@@ -7,17 +7,16 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/j4rv/cah"
 )
 
-func handleUsers(r *mux.Router) {
-	s := r.PathPrefix("/user").Subrouter()
-	s.HandleFunc("/login", processLogin).Methods("POST")
-	s.HandleFunc("/register", processRegister).Methods("POST")
-	s.HandleFunc("/logout", processLogout).Methods("POST", "GET")
-	s.HandleFunc("/valid-cookie", validCookie).Methods("GET")
+/*
+	TEMPLATE HANDLERS
+*/
+
+func loginPageHandler(w http.ResponseWriter, req *http.Request) {
+	execTemplate(loginPageTmpl, w, nil)
 }
 
 type loginPayload struct {

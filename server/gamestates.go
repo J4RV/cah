@@ -13,14 +13,6 @@ import (
 	"github.com/j4rv/cah"
 )
 
-func handleGameStates(r *mux.Router) {
-	s := r.PathPrefix("/gamestate/{gameStateID}").Subrouter()
-	s.HandleFunc("/state-websocket", gameStateWebsocket).Methods("GET")
-	s.Handle("/state", srvHandler(gameStateForUser)).Methods("GET")
-	s.Handle("/choose-winner", srvHandler(chooseWinner)).Methods("POST")
-	s.Handle("/play-cards", srvHandler(playCards)).Methods("POST")
-}
-
 /*
 GET GAME STATE
 */

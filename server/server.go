@@ -15,6 +15,7 @@ import (
 
 var port, secureport int
 var usingTLS bool
+var devMode bool
 var serverCert, serverPK string
 var publicDir string
 
@@ -45,6 +46,7 @@ func initCertificateStuff() {
 func parseFlags() {
 	flag.IntVar(&port, "port", 80, "Server port for serving HTTP")
 	flag.IntVar(&secureport, "secureport", 443, "Server port for serving HTTPS")
+	flag.BoolVar(&devMode, "dev", false, "Activates development mode")
 	flag.StringVar(&publicDir, "dir", "frontend/build", "the directory to serve files from. Defaults to 'frontend/build'")
 	flag.Parse()
 }
@@ -56,19 +58,55 @@ func Start(uc cah.Usecases) {
 	//Any non found paths should redirect to index. React-router will handle those.
 	router.NotFoundHandler = http.HandlerFunc(serveFrontend(publicDir + "/index.html"))
 
-	restRouter := router.PathPrefix("/rest").Subrouter()
-	handleUsers(restRouter)
-	handleGames(restRouter)
-	handleGameStates(restRouter)
+	setRestRouterHandlers(router)
+	setTemplateRouterHandlers(router)
 
 	//Static files handler
-	router.PathPrefix("/static").Handler(http.FileServer(http.Dir(publicDir)))
+	fs := http.FileServer(http.Dir(publicDir))
+	router.PathPrefix("/static").Handler(fs)
 	// Known files. We have to define them one by one since we can't use PathPrefix("/"),
 	// as that would make the NotFoundHandler stop working.
-	router.PathPrefix("/favicon.").Handler(http.FileServer(http.Dir(publicDir)))
-	router.Path("/manifest.json").Handler(http.FileServer(http.Dir(publicDir)))
+	router.PathPrefix("/favicon.").Handler(fs)
+	router.Path("/manifest.json").Handler(fs)
 
 	StartServer(router)
+}
+
+func setRestRouterHandlers(r *mux.Router) {
+	restRouter := r.PathPrefix("/rest").Subrouter()
+
+	{
+		s := restRouter.PathPrefix("/user").Subrouter()
+		s.HandleFunc("/login", processLogin).Methods("POST")
+		s.HandleFunc("/register", processRegister).Methods("POST")
+		s.HandleFunc("/logout", processLogout).Methods("POST", "GET")
+		s.HandleFunc("/valid-cookie", validCookie).Methods("GET")
+	}
+
+	{
+		s := restRouter.PathPrefix("/game").Subrouter()
+		s.Handle("/{gameID}/room-state", srvHandler(roomState)).Methods("GET")
+		s.Handle("/list-open", srvHandler(openGames)).Methods("GET")
+		s.Handle("/list-in-progress", srvHandler(inProgressGames)).Methods("GET")
+		s.Handle("/create", srvHandler(createGame)).Methods("POST")
+		s.Handle("/join", srvHandler(joinGame)).Methods("POST")
+		//s.Handle("/Leave", srvHandler(playCards)).Methods("POST")
+		s.Handle("/start", srvHandler(startGame)).Methods("POST")
+		s.Handle("/available-expansions", srvHandler(availableExpansions)).Methods("GET")
+	}
+
+	{
+		s := restRouter.PathPrefix("/gamestate/{gameStateID}").Subrouter()
+		s.HandleFunc("/state-websocket", gameStateWebsocket).Methods("GET")
+		s.Handle("/state", srvHandler(gameStateForUser)).Methods("GET")
+		s.Handle("/choose-winner", srvHandler(chooseWinner)).Methods("POST")
+		s.Handle("/play-cards", srvHandler(playCards)).Methods("POST")
+	}
+
+}
+
+func setTemplateRouterHandlers(r *mux.Router) {
+	r.HandleFunc("/login", loginPageHandler)
 }
 
 func StartServer(r *mux.Router) {

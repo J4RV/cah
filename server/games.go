@@ -13,18 +13,6 @@ import (
 	"github.com/j4rv/cah"
 )
 
-func handleGames(r *mux.Router) {
-	s := r.PathPrefix("/game").Subrouter()
-	s.Handle("/{gameID}/room-state", srvHandler(roomState)).Methods("GET")
-	s.Handle("/list-open", srvHandler(openGames)).Methods("GET")
-	s.Handle("/list-in-progress", srvHandler(inProgressGames)).Methods("GET")
-	s.Handle("/create", srvHandler(createGame)).Methods("POST")
-	s.Handle("/join", srvHandler(joinGame)).Methods("POST")
-	//s.Handle("/Leave", srvHandler(playCards)).Methods("POST")
-	s.Handle("/start", srvHandler(startGame)).Methods("POST")
-	s.Handle("/available-expansions", srvHandler(availableExpansions)).Methods("GET")
-}
-
 const minWhites = 34
 const minBlacks = 8
 const minHandSize = 5
