@@ -19,6 +19,10 @@
   --color-error: #F44336;
 }
 
+html {
+  font-size: 0.8em;
+}
+
 body {
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
   background-color: var(--color-bg);
@@ -55,7 +59,10 @@ input {
   margin-bottom: 1em;
   border: none;
   border-bottom: solid 1px var(--color-bg);
+  border-radius: 0px;
   background: transparent;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 input:focus {
@@ -83,7 +90,7 @@ button:active {
 }
 
 .link-button {
-  padding: 8px 16px;
+  padding: 8px;
   border: solid 1px var(--color-gray);
   border-radius: 4px;
 }
@@ -100,14 +107,13 @@ label {
   height: 13rem;
   padding: 12px 8px;
   border-radius: 10px;
-  display: inline-block;
+  justify-self: center;
   box-sizing: border-box;
   font-family: "Open Sans", "Roboto", "Helvetica", "Arial", sans-serif;
   font-size: .8rem;
   font-weight: 600;
   text-align: center;
   white-space: "pre-wrap";
-  position: relative;
 }
 
 .black-card {
@@ -142,6 +148,13 @@ label {
 
 .glowing {
   box-shadow: 0 0 4px 2px #b2ebf2, 0 0 24px 2px #00bcd4;
+}
+
+/* Larger than tablet */
+@media (min-width: 750px) {
+  html {
+    font-size: 1em;
+  }
 }
 
 </style>

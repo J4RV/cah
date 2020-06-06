@@ -34,7 +34,7 @@ footer {
 <div class="main">
   <h2>Cards Against Humanity</h2>
   <h4>A party game for horrible people.</h4>
-  <form class="login-form" method="post">
+  <form class="login-form" action="/login" method="post">
     {{if .ErrorMsg}}
     <p class="err-msg">{{.ErrorMsg}}</p>
     {{end}}
@@ -54,16 +54,16 @@ footer {
       </div>
       <p class="card-expansion-text">Security questions</p>
     </div>
-    <button formaction="/api/user/login" class="login-btn col-2 primary-button">LOG IN</button>
-    <button formaction="/api/user/register" class="login-btn col-2">REGISTER</button>
+    <button formaction="/login" class="login-btn col-2 primary-button">LOG IN</button>
+    <button formaction="/register" class="login-btn col-2">REGISTER</button>
   </form>
 </div>
 
 <footer>
-<a class="link-button" style="margin: 1em;" href="https://github.com/J4RV">
+<a style="padding: 1em;" href="https://github.com/J4RV">
   J4RV's GitHub
 </a>
-<a class="link-button" style="margin: 1em;" href="https://store.cardsagainsthumanity.com/">
+<a style="padding: 1em;" href="https://store.cardsagainsthumanity.com/">
   Official Store
 </a>
 </footer>

@@ -58,7 +58,7 @@ func processRegister(w http.ResponseWriter, req *http.Request) {
 	u, err := usecase.User.Register(username[0], password[0])
 	if err != nil {
 		log.Printf("%s tried to register using user '%s'", req.RemoteAddr, username[0])
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		execTemplate(loginPageTmpl, w, loginPageCtx{ErrorMsg: err.Error()})
 		return
 	}
 	log.Printf("User %s with id %d just registered!", u.Username, u.ID)
