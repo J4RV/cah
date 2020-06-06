@@ -1,18 +1,25 @@
 package server
 
 import (
+	"crypto/rand"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/sessions"
 	"github.com/j4rv/cah"
 )
 
+const wrongUserOrPassMsg = "The username or password you entered is incorrect."
+const afterLoginRedirect = "/game/list/open"
+
 /*
 	TEMPLATE HANDLERS
 */
+
+type loginPageCtx struct {
+	ErrorMsg string
+}
 
 func loginPageHandler(w http.ResponseWriter, req *http.Request) {
 	execTemplate(loginPageTmpl, w, nil)
@@ -23,26 +30,21 @@ func processLogin(w http.ResponseWriter, req *http.Request) {
 	username := req.Form["username"]
 	password := req.Form["password"]
 	if len(username) != 1 || len(password) != 1 {
-		http.Error(w, "Unexpected amount of form vals.", http.StatusUnauthorized)
+		http.Redirect(w, req, "/login", http.StatusUnauthorized)
 		return
 	}
 	u, ok := usecase.User.Login(username[0], password[0])
 	if !ok {
 		log.Printf("%s tried to login using user '%s'", req.RemoteAddr, username)
-		http.Error(w, "The username and password you entered did not match our records.", http.StatusUnauthorized)
+		execTemplate(loginPageTmpl, w, loginPageCtx{ErrorMsg: wrongUserOrPassMsg})
 		return
 	}
-	session, err := cookies.Get(req, sessionid)
-	if err != nil {
-		log.Printf("Failed at getting the cookie.")
-		http.Error(w, "Failed at getting the cookie", http.StatusBadRequest)
-		return
-	}
+	log.Printf("User %s with id %d just logged in!", u.Username, u.ID)
+	session, _ := cookies.Get(req, sessionid)
 	session.Values[userid] = u.ID
 	session.Save(req, w)
-	log.Printf("User %s with id %d just logged in!", u.Username, u.ID)
 	// everything ok, back to index with your brand new session!
-	http.Redirect(w, req, "/", http.StatusFound)
+	http.Redirect(w, req, afterLoginRedirect, http.StatusFound)
 }
 
 func processRegister(w http.ResponseWriter, req *http.Request) {
@@ -59,12 +61,12 @@ func processRegister(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	session, err := cookies.Get(req, sessionid)
+	log.Printf("User %s with id %d just registered!", u.Username, u.ID)
+	session, _ := cookies.Get(req, sessionid)
 	session.Values[userid] = u.ID
 	session.Save(req, w)
-	log.Printf("User %s with id %d just registered!", u.Username, u.ID)
 	// everything ok, back to index with your brand new session!
-	http.Redirect(w, req, "/", http.StatusFound)
+	http.Redirect(w, req, afterLoginRedirect, http.StatusFound)
 }
 
 func processLogout(w http.ResponseWriter, req *http.Request) {
@@ -96,25 +98,15 @@ const sessionid = "session_token"
 const userid = "user_id"
 
 func init() {
-	skey := os.Getenv("SESSION_KEY")
-	encKey := os.Getenv("COOKIE_ENCRIPTION_KEY")
-
-	if skey == "" {
-		panic("Please set SESSION_KEY environment variable; it is needed to have secure cookies")
-	}
-	if encKey == "" && !devMode {
-		panic("Please set COOKIE_ENCRIPTION_KEY for production instances. Must be 16 or 32 bytes long.")
-	}
-
-	if encKey == "" {
-		cookies = sessions.NewCookieStore([]byte(skey))
-	} else {
-		cookies = sessions.NewCookieStore([]byte(skey), []byte(encKey))
-	}
+	skey := make([]byte, 64)
+	encKey := make([]byte, 32)
+	rand.Read(skey)
+	rand.Read(encKey)
+	cookies = sessions.NewCookieStore(skey, encKey)
 }
 
-func userFromSession(r *http.Request) (cah.User, error) {
-	session, err := cookies.Get(r, sessionid)
+func userFromSession(req *http.Request) (cah.User, error) {
+	session, err := cookies.Get(req, sessionid)
 	if err != nil {
 		return cah.User{}, err
 	}
