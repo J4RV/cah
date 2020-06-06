@@ -52,7 +52,7 @@ func openGames(w http.ResponseWriter, req *http.Request) error {
 
 func inProgressGames(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -91,7 +91,7 @@ type createGamePayload struct {
 
 func createGame(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -119,7 +119,7 @@ type joinGamePayload struct {
 
 func joinGame(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -155,7 +155,7 @@ type startGamePayload struct {
 
 func startGame(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -218,7 +218,7 @@ func optionsFromCreateRequest(payload startGamePayload) ([]cah.Option, error) {
 
 func availableExpansions(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	_, err := userFromSession(req)
+	_, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}

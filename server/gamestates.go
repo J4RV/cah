@@ -83,7 +83,7 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 	defer conn.Close()
 
 	// First response
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		return
 	}
@@ -113,7 +113,7 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 }
 
 func gameStateForUser(w http.ResponseWriter, req *http.Request) error {
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ type chooseWinnerPayload struct {
 
 func chooseWinner(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -242,7 +242,7 @@ type playCardsPayload struct {
 
 func playCards(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}

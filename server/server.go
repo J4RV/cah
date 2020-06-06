@@ -78,6 +78,8 @@ func setRestRouterHandlers(r *mux.Router) {
 
 	{
 		s := restRouter.PathPrefix("/user").Subrouter()
+		s.HandleFunc("/login", processLogin).Methods("POST")
+		s.HandleFunc("/register", processRegister).Methods("POST")
 		s.HandleFunc("/logout", processLogout).Methods("POST", "GET")
 		s.HandleFunc("/valid-cookie", validCookie).Methods("GET")
 	}
@@ -106,9 +108,7 @@ func setRestRouterHandlers(r *mux.Router) {
 
 func setTemplateRouterHandlers(r *mux.Router) {
 	r.HandleFunc("/", loginPageHandler)
-	r.HandleFunc("/login", loginPageHandler).Methods("GET")
-	r.HandleFunc("/login", processLogin).Methods("POST")
-	r.HandleFunc("/register", processRegister).Methods("POST")
+	r.HandleFunc("/login", loginPageHandler)
 }
 
 func StartServer(r *mux.Router) {
