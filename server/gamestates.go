@@ -13,14 +13,6 @@ import (
 	"github.com/j4rv/cah"
 )
 
-func handleGameStates(r *mux.Router) {
-	s := r.PathPrefix("/gamestate/{gameStateID}").Subrouter()
-	s.HandleFunc("/state-websocket", gameStateWebsocket).Methods("GET")
-	s.Handle("/state", srvHandler(gameStateForUser)).Methods("GET")
-	s.Handle("/choose-winner", srvHandler(chooseWinner)).Methods("POST")
-	s.Handle("/play-cards", srvHandler(playCards)).Methods("POST")
-}
-
 /*
 GET GAME STATE
 */
@@ -91,7 +83,7 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 	defer conn.Close()
 
 	// First response
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		return
 	}
@@ -121,7 +113,7 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 }
 
 func gameStateForUser(w http.ResponseWriter, req *http.Request) error {
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		return err
 	}
@@ -210,7 +202,7 @@ type chooseWinnerPayload struct {
 
 func chooseWinner(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -250,7 +242,7 @@ type playCardsPayload struct {
 
 func playCards(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}

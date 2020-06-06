@@ -88,12 +88,12 @@ func (control gameController) Start(g cah.Game, state *cah.GameState, opts ...ca
 	}
 	state.Players = players
 	applyOptions(state, opts...)
+	g.State = state
 	err := putBlackCardInPlay(state)
 	if err != nil {
 		return err
 	}
 	playersDraw(state)
-	g.State = state
 	err = control.store.Update(g)
 	if err != nil {
 		return err

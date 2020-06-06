@@ -1,28 +1,28 @@
-import withWidth, { isWidthUp } from '@material-ui/core/withWidth'
+import withWidth, { isWidthUp } from "@material-ui/core/withWidth"
 
-import IconButton from '@material-ui/core/IconButton';
-import { Link } from 'react-router-dom'
-import Menu from '@material-ui/core/Menu';
-import MenuIcon from '@material-ui/icons/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import React from 'react'
-import { logoutUrl } from '../restUrls'
-import { withStyles } from '@material-ui/core/styles'
+import IconButton from "@material-ui/core/IconButton"
+import { Link } from "react-router-dom"
+import Menu from "@material-ui/core/Menu"
+import MenuIcon from "@material-ui/icons/Menu"
+import MenuItem from "@material-ui/core/MenuItem"
+import React from "react"
+import { logoutUrl } from "../restUrls"
+import { withStyles } from "@material-ui/core/styles"
 
-const styles = theme => ({
+const styles = (theme) => ({
   menuButton: {
     marginRight: -12,
     marginLeft: theme.spacing.unit * 2,
   },
-});
+})
 
 const MenuElements = ({ onElementClick }) => (
   <React.Fragment>
     <Link to="/game/list/my-games-in-progress">
-      <MenuItem onClick={onElementClick}>My games in progress</MenuItem>
+      <MenuItem onClick={onElementClick}>In progress</MenuItem>
     </Link>
     <Link to="/game/list/open">
-      <MenuItem onClick={onElementClick}>Open games</MenuItem>
+      <MenuItem onClick={onElementClick}>New games</MenuItem>
     </Link>
     <a href={logoutUrl}>
       <MenuItem onClick={onElementClick}>Logout</MenuItem>
@@ -48,15 +48,11 @@ class AppBarMenu extends React.Component {
           color="inherit"
           aria-label="Menu"
           onClick={this.handleToggle}
-          buttonRef={node => this.anchorEl = node}
+          buttonRef={(node) => (this.anchorEl = node)}
         >
           <MenuIcon />
         </IconButton>
-        <Menu
-          open={open}
-          anchorEl={this.anchorEl}
-          onClose={this.handleClose}
-        >
+        <Menu open={open} anchorEl={this.anchorEl} onClose={this.handleClose}>
           <MenuElements onElementClick={this.handleClose} />
         </Menu>
       </div>
@@ -64,13 +60,13 @@ class AppBarMenu extends React.Component {
   }
 
   handleToggle = () => {
-    this.setState(state => ({ open: !state.open }))
+    this.setState((state) => ({ open: !state.open }))
   }
 
-  handleClose = event => {
+  handleClose = (event) => {
     if (this.anchorEl.contains(event.target)) {
       // anchorEl is the Menu button, which will toggle the open property on click
-      return;
+      return
     }
     this.setState({ open: false })
   }

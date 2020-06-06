@@ -13,18 +13,6 @@ import (
 	"github.com/j4rv/cah"
 )
 
-func handleGames(r *mux.Router) {
-	s := r.PathPrefix("/game").Subrouter()
-	s.Handle("/{gameID}/room-state", srvHandler(roomState)).Methods("GET")
-	s.Handle("/list-open", srvHandler(openGames)).Methods("GET")
-	s.Handle("/list-in-progress", srvHandler(inProgressGames)).Methods("GET")
-	s.Handle("/create", srvHandler(createGame)).Methods("POST")
-	s.Handle("/join", srvHandler(joinGame)).Methods("POST")
-	//s.Handle("/Leave", srvHandler(playCards)).Methods("POST")
-	s.Handle("/start", srvHandler(startGame)).Methods("POST")
-	s.Handle("/available-expansions", srvHandler(availableExpansions)).Methods("GET")
-}
-
 const minWhites = 34
 const minBlacks = 8
 const minHandSize = 5
@@ -64,7 +52,7 @@ func openGames(w http.ResponseWriter, req *http.Request) error {
 
 func inProgressGames(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -103,7 +91,7 @@ type createGamePayload struct {
 
 func createGame(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -131,7 +119,7 @@ type joinGamePayload struct {
 
 func joinGame(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -167,7 +155,7 @@ type startGamePayload struct {
 
 func startGame(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -230,7 +218,7 @@ func optionsFromCreateRequest(payload startGamePayload) ([]cah.Option, error) {
 
 func availableExpansions(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	_, err := userFromSession(req)
+	_, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}

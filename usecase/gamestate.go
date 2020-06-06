@@ -60,8 +60,7 @@ func (control stateController) End(g *cah.GameState) error {
 
 // TODO this method needs some heavy refactoring
 func (control stateController) GiveBlackCardToWinner(wID int, g *cah.GameState) error {
-	err := giveBlackCardToWinnerChecks(wID, g)
-	if err != nil {
+	if err := giveBlackCardToWinnerChecks(wID, g); err != nil {
 		return err
 	}
 	var winner *cah.Player
@@ -74,6 +73,7 @@ func (control stateController) GiveBlackCardToWinner(wID int, g *cah.GameState) 
 		return fmt.Errorf("Invalid winner id %d", wID)
 	}
 	winner.Points = append(winner.Points, g.BlackCardInPlay)
+	// the rest of the code should be "roundStart" or "startNewRound"
 	if g.MaxRounds > 0 && g.CurrRound >= g.MaxRounds {
 		return control.End(g)
 	}
@@ -85,7 +85,7 @@ func (control stateController) GiveBlackCardToWinner(wID int, g *cah.GameState) 
 		p.WhiteCardsInPlay = []*cah.WhiteCard{}
 	}
 	_ = control.nextCzar(g)
-	err = putBlackCardInPlay(g)
+	err := putBlackCardInPlay(g)
 	if err != nil {
 		return err
 	}
@@ -172,6 +172,17 @@ func playersDraw(s *cah.GameState) {
 }
 
 func putBlackCardInPlay(g *cah.GameState) error {
+	if err := putBlackCardInPlayChecks(g); err != nil {
+		return err
+	}
+	g.BlackCardInPlay = g.BlackDeck[0]
+	g.BlackDeck = g.BlackDeck[1:]
+	g.Phase = cah.SinnersPlaying
+	g.CurrRound++
+	return nil
+}
+
+func putBlackCardInPlayChecks(g *cah.GameState) error {
 	if g.BlackCardInPlay != nilBlackCard {
 		return errors.New("Tried to put a black card in play but there is already a black card in play")
 	}
@@ -181,10 +192,6 @@ func putBlackCardInPlay(g *cah.GameState) error {
 	if len(g.BlackDeck) == 0 {
 		return errorEmptyBlackDeck{}
 	}
-	g.BlackCardInPlay = g.BlackDeck[0]
-	g.BlackDeck = g.BlackDeck[1:]
-	g.Phase = cah.SinnersPlaying
-	g.CurrRound++
 	return nil
 }
 

@@ -1,90 +1,103 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/gorilla/mux"
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/j4rv/cah"
 )
 
-func handleUsers(r *mux.Router) {
-	s := r.PathPrefix("/user").Subrouter()
-	s.HandleFunc("/login", processLogin).Methods("POST")
-	s.HandleFunc("/register", processRegister).Methods("POST")
-	s.HandleFunc("/logout", processLogout).Methods("POST", "GET")
-	s.HandleFunc("/valid-cookie", validCookie).Methods("GET")
-}
+const wrongUserOrPassMsg = "The username or password you entered is incorrect."
+const afterLoginRedirect = "/game/list/open"
 
-type loginPayload struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+const sessionAge = 60 * 15                    // 15 min
+const rememberMeSessionAge = 60 * 60 * 24 * 7 // 1 week
+
+/*
+	TEMPLATE HANDLERS
+*/
+
+const loginFlashKey = "login-flash"
+
+func loginPageHandler(w http.ResponseWriter, req *http.Request) {
+	execTemplate(loginPageTmpl, w, getFlashes(loginFlashKey, w, req))
 }
 
 func processLogin(w http.ResponseWriter, req *http.Request) {
-	var payload loginPayload
-	decoder := json.NewDecoder(req.Body)
-	err := decoder.Decode(&payload)
-	if err != nil {
-		http.Error(w, "Misconstructed payload", http.StatusBadRequest)
+	req.ParseForm()
+	username := req.Form["username"]
+	password := req.Form["password"]
+	if len(username) != 1 || len(password) != 1 {
+		http.Redirect(w, req, "/login", http.StatusFound)
 		return
 	}
-	u, ok := usecase.User.Login(payload.Username, payload.Password)
+	u, ok := usecase.User.Login(username[0], password[0])
 	if !ok {
-		log.Printf("%s tried to login using user '%s'", req.RemoteAddr, payload.Username)
-		http.Error(w, "The username and password you entered did not match our records.", http.StatusUnauthorized)
+		addFlashMsg(wrongUserOrPassMsg, loginFlashKey, w, req)
+		http.Redirect(w, req, "/login", http.StatusFound)
 		return
 	}
-	session, err := cookies.Get(req, sessionid)
-	session.Values[userid] = u.ID
-	session.Save(req, w)
 	log.Printf("User %s with id %d just logged in!", u.Username, u.ID)
+	if err := sessionStart(u, len(req.Form["rememberme"]) == 1, w, req); err != nil {
+		return
+	}
 	// everything ok, back to index with your brand new session!
-	writeResponse(w, u)
-}
-
-type registerPayload struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	http.Redirect(w, req, afterLoginRedirect, http.StatusFound)
 }
 
 func processRegister(w http.ResponseWriter, req *http.Request) {
-	var payload registerPayload
-	decoder := json.NewDecoder(req.Body)
-	err := decoder.Decode(&payload)
-	if err != nil {
-		http.Error(w, "Misconstructed payload", http.StatusBadRequest)
+	req.ParseForm()
+	username := req.Form["username"]
+	password := req.Form["password"]
+	if len(username) != 1 || len(password) != 1 {
+		http.Error(w, "Unexpected amount of form vals.", http.StatusUnauthorized)
 		return
 	}
-	u, err := usecase.User.Register(payload.Username, payload.Password)
+	u, err := usecase.User.Register(username[0], password[0])
 	if err != nil {
-		log.Printf("%s tried to register using user '%s'", req.RemoteAddr, payload.Username)
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		addFlashMsg(err.Error(), loginFlashKey, w, req)
+		http.Redirect(w, req, "/login", http.StatusFound)
 		return
 	}
-	session, err := cookies.Get(req, sessionid)
-	session.Values[userid] = u.ID
-	session.Save(req, w)
 	log.Printf("User %s with id %d just registered!", u.Username, u.ID)
-	writeResponse(w, u)
+	if err := sessionStart(u, len(req.Form["rememberme"]) == 1, w, req); err != nil {
+		return
+	}
+	// everything ok, back to index with your brand new session!
+	http.Redirect(w, req, afterLoginRedirect, http.StatusFound)
 }
 
 func processLogout(w http.ResponseWriter, req *http.Request) {
-	session, err := cookies.Get(req, sessionid)
-	if err != nil {
-		http.Error(w, "There was a problem while getting the session cookie", http.StatusInternalServerError)
-	}
+	session := getSession(w, req)
 	session.Values = make(map[interface{}]interface{})
-	session.Save(req, w)
+	session.Options.MaxAge = -1
+	err := session.Save(req, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, req, "/", http.StatusFound)
 }
 
+func sessionStart(u cah.User, rememberme bool, w http.ResponseWriter, req *http.Request) error {
+	session := getSession(w, req)
+	session.Values["user_id"] = u.ID
+	if rememberme {
+		session.Options.MaxAge = rememberMeSessionAge
+	}
+	err := session.Save(req, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	return nil
+}
+
 func validCookie(w http.ResponseWriter, req *http.Request) {
-	u, err := userFromSession(req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, "you dont own a valid cookie", http.StatusUnauthorized)
 		return
@@ -98,23 +111,16 @@ func validCookie(w http.ResponseWriter, req *http.Request) {
 
 var cookies *sessions.CookieStore
 
-const sessionid = "session_token"
-const userid = "user_id"
-
 func init() {
-	skey := os.Getenv("SESSION_KEY")
-	if skey == "" {
-		panic("Please set SESSION_KEY environment variable; it is needed to have secure cookies")
-	}
-	cookies = sessions.NewCookieStore([]byte(skey))
+	skey := securecookie.GenerateRandomKey(64)
+	encKey := securecookie.GenerateRandomKey(32)
+	cookies = sessions.NewCookieStore(skey, encKey)
+	cookies.MaxAge(sessionAge) //15m
 }
 
-func userFromSession(r *http.Request) (cah.User, error) {
-	session, err := cookies.Get(r, sessionid)
-	if err != nil {
-		return cah.User{}, err
-	}
-	val, ok := session.Values[userid]
+func userFromSession(w http.ResponseWriter, req *http.Request) (cah.User, error) {
+	session := getSession(w, req)
+	val, ok := session.Values["user_id"]
 	if !ok {
 		return cah.User{}, fmt.Errorf("Tried to get user from session without an id")
 	}
@@ -127,5 +133,29 @@ func userFromSession(r *http.Request) (cah.User, error) {
 	if !ok {
 		return u, fmt.Errorf("No user found with ID %d", id)
 	}
+	session.Save(req, w)
 	return u, nil
+}
+
+func getSession(w http.ResponseWriter, req *http.Request) *sessions.Session {
+	// The CookieStore keys change on every server startup, so we ignore "cookies.Get" errors
+	session, _ := cookies.Get(req, "session_token")
+	return session
+}
+
+func addFlashMsg(msg string, key string, w http.ResponseWriter, req *http.Request) {
+	log.Printf("%s got flashed: '%s'", req.RemoteAddr, msg)
+	session := getSession(w, req)
+	session.AddFlash(msg, key)
+	session.Save(req, w)
+}
+
+func getFlashes(key string, w http.ResponseWriter, req *http.Request) []interface{} {
+	session := getSession(w, req)
+	flashes := session.Flashes(key)
+	if len(flashes) == 0 {
+		return []interface{}{}
+	}
+	session.Save(req, w)
+	return flashes
 }
