@@ -34,6 +34,10 @@ a {
   text-decoration: inherit;
 }
 
+p {
+  margin-bottom: 0.35em;
+}
+
 h2 {
   font-size: 3.75rem;
   font-weight: 300;
@@ -75,6 +79,7 @@ button {
   padding: 8px;
   border-radius: 4px;
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-size: 1rem;
   font-weight: 500;
   cursor:pointer;
   box-shadow: {{$shadowElevation2}};
@@ -93,11 +98,20 @@ button:active {
   padding: 8px;
   border: solid 1px var(--color-gray);
   border-radius: 4px;
+  font-size: 1rem;
+  color: var(--color-primary-text);
+  background: transparent;
 }
 
 label {
   margin-bottom: 0.2em;
   display: inline-block;
+}
+
+/* Commons */
+
+.grid-item-right {
+  justify-self: right;
 }
 
 /* CAH related */

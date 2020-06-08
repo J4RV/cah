@@ -11,6 +11,7 @@ import (
 )
 
 const wrongUserOrPassMsg = "The username or password you entered is incorrect."
+const notLoggedInMsg = "You need to be logged in to see that page."
 const afterLoginRedirect = "/game/list/open"
 
 const sessionAge = 60 * 15                    // 15 min
@@ -112,6 +113,11 @@ func validCookie(w http.ResponseWriter, req *http.Request) {
 var cookies *sessions.CookieStore
 
 func init() {
+	if devMode {
+		cookies = sessions.NewCookieStore()
+		return
+	}
+
 	skey := securecookie.GenerateRandomKey(64)
 	encKey := securecookie.GenerateRandomKey(32)
 	cookies = sessions.NewCookieStore(skey, encKey)

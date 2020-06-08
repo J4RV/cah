@@ -19,6 +19,30 @@ const minHandSize = 5
 const maxHandSize = 30
 
 /*
+	TEMPLATE HANDLERS
+*/
+
+type gamesPageCtx struct {
+	LoggedUser      cah.User
+	InProgressGames []cah.Game
+	OpenGames       []cah.Game
+}
+
+func gamesPageHandler(w http.ResponseWriter, req *http.Request) {
+	user, err := userFromSession(w, req)
+	if err != nil {
+		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
+	}
+	execTemplate(gamesPageTmpl, w, gamesPageCtx{
+		LoggedUser:      user,
+		InProgressGames: usecase.Game.InProgressForUser(user),
+		OpenGames:       usecase.Game.AllOpen(),
+	})
+}
+
+/*
 OPEN GAMES LIST
 */
 

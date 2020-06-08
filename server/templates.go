@@ -21,10 +21,12 @@ var tmplBase = []string{
 
 const (
 	loginPageTmpl tmplID = iota
+	gamesPageTmpl
 )
 
 var templateFiles = map[tmplID][]string{
 	loginPageTmpl: append(tmplBase, tmplDir+"login.gohtml"),
+	gamesPageTmpl: append(tmplBase, tmplDir+"games.gohtml"),
 }
 
 // Functions to be called from outside this file to render the templates:
