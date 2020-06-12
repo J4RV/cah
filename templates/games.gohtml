@@ -1,34 +1,19 @@
 {{define "content"}}
-<header class="header">
-  <div>{{.LoggedUser.Username}}</div>
-  <title>Cards Against Humanity</title>
-  <div class="grid-item-right" style="text-align: right;">
-    <a href="https://github.com/J4RV">
-      <button class="link-button">J4RV's GitHub</button>
-    </a>
-    <a href="https://store.cardsagainsthumanity.com/">
-      <button class="link-button">Official Store</button>
-    </a>
-    <a href="/api/user/logout">
-      <button>Logout</button>
-    </a>
-  </div>
-</header>
-
+{{template "logged-header" .}}
 <div class="main">
 
   <h4>In progress</h4>
   {{if .InProgressGames}}
     <table>
       <tr>
-        <th>Room name</td>
+        <th>Game name</td>
         <th>Action</td>
       </tr>
       {{range $game := .InProgressGames}}
       <tr>
         <td>{{$game.Name}}</td>
         <td>
-          <a href="/game/room/{{$game.ID}}">
+          <a href="/games/{{$game.ID}}">
             <button>CONTINUE</button>
           </a>
         </td>
@@ -43,14 +28,14 @@
   {{if .OpenGames}}
     <table>
       <tr>
-        <th>Open lobby</td>
+        <th>Game name</td>
         <th>Action</td>
       </tr>
       {{range $game := .OpenGames}}
       <tr>
         <td>{{$game.Name}}</td>
         <td>
-          <a href="/lobby/{{$game.ID}}">
+          <a href="/games/{{$game.ID}}">
             <button>ENTER</button>
           </a>
         </td>
@@ -61,7 +46,7 @@
     <p>None</p>
   {{end}}
 
-  <a href="/game/list/create">
+  <a href="/games/create">
     <button class="primary-button">CREATE NEW GAME</button>
   </a>
 
@@ -70,46 +55,8 @@
 
 {{define "style"}}
 <style>
-.main {
-  text-align: center;
-  margin-top: 24px;
-}
-
-.header {
-  display: grid;
-  grid-template-columns: 35% 30% 35%;
-  padding: 8px;
-  align-items: center;
-  background: var(--color-black);
-  color: var(--color-white);
-}
-
-title {
-  display: block;
-  text-align: center;
-}
-
 table {
   margin: 1rem auto 4rem auto;
-  text-align: left;
-}
-
-th {
-  font-weight: 500;
-}
-
-th, td {    
-  padding: 8px 24px;
-  border-bottom: 1px var(--color-gray) solid;
-}
-
-@media (max-width: 749px) {
-  title {
-    display: none;
-  }
-  .header {
-    grid-template-columns: 20% 80%;
-  }
 }
 </style>
 {{end}}

@@ -38,6 +38,20 @@ p {
   margin-bottom: 0.35em;
 }
 
+b {
+  font-weight: 600;
+}
+
+title {
+  display: block;
+  text-align: center;
+}
+
+small {
+  font-size: 0.75rem;
+  color: var(--color-gray);
+}
+
 h1 {
   font-size: 3.75rem;
   font-weight: 300;
@@ -63,17 +77,34 @@ h6 {
   letter-spacing: 0.02em;
 }
 
+table {
+  text-align: left;
+}
+
+th {
+  font-weight: 500;
+}
+
+th, td {    
+  padding: 8px 24px;
+  border-bottom: 1px var(--color-gray) solid;
+}
+
 /* Forms */
 
 form {
   background: var(--color-font);
   color: var(--color-bg);
   padding: 16px;
+  margin: 8px;
   border-radius: 4px;
+  text-align: left;
+  max-width: 600px;
+  display: inline-block;
 }
 
 fieldset {
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.5rem 0;
 }
 
 input {
@@ -96,7 +127,7 @@ input[type=text], input[type=password] {
 
 input[type=number] {
   -moz-appearance:textfield;
-  width: 4rem;
+  width: 3rem;
 }
 
 button {
@@ -107,7 +138,7 @@ button {
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
   font-size: 1rem;
   font-weight: 500;
-  cursor:pointer;
+  cursor: pointer;
   box-shadow: {{$shadowElevation2}};
 }
 
@@ -134,16 +165,33 @@ label {
   display: inline-block;
 }
 
+label:first-child {
+  width: 8rem;
+}
+
 .label-checkbox {
   padding: 8px;
   border: solid 1px var(--color-gray);
   border-radius: 4px;
+  cursor: pointer;
 }
 
 /* Commons */
 
+.main {
+  text-align: center;
+  margin-top: 24px;
+}
+
 .grid-item-right {
   justify-self: right;
+}
+
+.err-msg {
+  grid-column: span 2;
+  color: var(--color-error);
+  margin-bottom: 16px;
+  font-weight: 500;
 }
 
 /* CAH related */

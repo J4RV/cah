@@ -1,0 +1,31 @@
+{{define "content"}}
+{{template "logged-header" .}}
+<div class="main">
+
+  <h2>Create a new game</h2>
+
+  <form>
+    {{range $flash := .Flashes}}
+      <p class="err-msg">{{$flash}}</p>
+    {{end}}
+    
+    <fieldset>
+      <b><label for="name">Name</label></b>
+      <input type="text" id="name" name="name" value="">
+      <br><small>The name for the game lobby.</small>
+    </fieldset>
+    
+    <fieldset>
+      <b><label for="name">Password</label></b>
+      <input type="password" id="name" name="name" value="">
+      <br><small>Leave it empty for an open lobby.</small>
+    </fieldset>
+
+    <button class="primary-button">CREATE</button>
+
+    <a href="/games" class="link-button" style="margin-left: 8px;">CANCEL</a>
+
+  </form>
+
+</div>
+{{end}}

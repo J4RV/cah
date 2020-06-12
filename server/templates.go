@@ -10,6 +10,7 @@ import (
 type tmplID string
 
 const tmplDir = "templates/"
+const tmplComponentsDir = "templates/components/"
 
 var tmplBase = []string{
 	tmplDir + "layout/base.gohtml",
@@ -21,17 +22,19 @@ var tmplBase = []string{
 // Template definitions
 
 const (
-	loginPageTmpl    tmplID = "Login"
-	gamesPageTmpl    tmplID = "Games"
-	lobbyPageTmpl    tmplID = "Lobby"
-	notFoundPageTmpl tmplID = "Not found"
+	loginPageTmpl      tmplID = "Login"
+	gamesPageTmpl      tmplID = "Games"
+	createGamePageTmpl tmplID = "Create game"
+	lobbyPageTmpl      tmplID = "Lobby"
+	notFoundPageTmpl   tmplID = "Not found"
 )
 
 var templateFiles = map[tmplID][]string{
-	loginPageTmpl:    append(tmplBase, tmplDir+"login.gohtml"),
-	gamesPageTmpl:    append(tmplBase, tmplDir+"games.gohtml"),
-	lobbyPageTmpl:    append(tmplBase, tmplDir+"lobby.gohtml"),
-	notFoundPageTmpl: append(tmplBase, tmplDir+"404.gohtml"),
+	loginPageTmpl:      append(tmplBase, tmplDir+"login.gohtml"),
+	notFoundPageTmpl:   append(tmplBase, tmplDir+"404.gohtml"),
+	gamesPageTmpl:      append(tmplBase, tmplDir+"games.gohtml", tmplComponentsDir+"logged-header.gohtml"),
+	lobbyPageTmpl:      append(tmplBase, tmplDir+"lobby.gohtml", tmplComponentsDir+"logged-header.gohtml"),
+	createGamePageTmpl: append(tmplBase, tmplDir+"create-game.gohtml", tmplComponentsDir+"logged-header.gohtml"),
 }
 
 // Functions to be called from outside this file to render the templates:

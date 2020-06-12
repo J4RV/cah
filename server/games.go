@@ -44,6 +44,24 @@ func gamesPageHandler(w http.ResponseWriter, req *http.Request) {
 	})
 }
 
+type createGamePageCtx struct {
+	LoggedUser cah.User
+	Flashes    []interface{}
+}
+
+func createGamePageHandler(w http.ResponseWriter, req *http.Request) {
+	user, err := userFromSession(w, req)
+	if err != nil {
+		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
+	}
+	execTemplate(createGamePageTmpl, w, lobbyPageCtx{
+		LoggedUser: user,
+		Flashes:    getFlashes(gamesFlashKey, w, req),
+	})
+}
+
 type lobbyPageCtx struct {
 	LoggedUser          cah.User
 	Game                cah.Game
@@ -68,7 +86,7 @@ func lobbyPageHandler(w http.ResponseWriter, req *http.Request) {
 		LoggedUser:          user,
 		Game:                game,
 		AvailableExpansions: usecase.Card.AvailableExpansions(),
-		Flashes:             getFlashes("", w, req),
+		Flashes:             getFlashes(gamesFlashKey, w, req),
 	})
 }
 
