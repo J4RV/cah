@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"net/http"
 )
 
 type tmplID string
@@ -20,15 +21,17 @@ var tmplBase = []string{
 // Template definitions
 
 const (
-	loginPageTmpl tmplID = "Login"
-	gamesPageTmpl tmplID = "Games"
-	lobbyPageTmpl tmplID = "Lobby"
+	loginPageTmpl    tmplID = "Login"
+	gamesPageTmpl    tmplID = "Games"
+	lobbyPageTmpl    tmplID = "Lobby"
+	notFoundPageTmpl tmplID = "Not found"
 )
 
 var templateFiles = map[tmplID][]string{
-	loginPageTmpl: append(tmplBase, tmplDir+"login.gohtml"),
-	gamesPageTmpl: append(tmplBase, tmplDir+"games.gohtml"),
-	lobbyPageTmpl: append(tmplBase, tmplDir+"lobby.gohtml"),
+	loginPageTmpl:    append(tmplBase, tmplDir+"login.gohtml"),
+	gamesPageTmpl:    append(tmplBase, tmplDir+"games.gohtml"),
+	lobbyPageTmpl:    append(tmplBase, tmplDir+"lobby.gohtml"),
+	notFoundPageTmpl: append(tmplBase, tmplDir+"404.gohtml"),
 }
 
 // Functions to be called from outside this file to render the templates:
@@ -50,6 +53,14 @@ func execTemplate(id tmplID, w io.Writer, data interface{}) {
 		compiledTemplates[id] = nil
 	}
 }
+
+func simpleTmplHandler(id tmplID) func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		execTemplate(id, w, nil)
+	}
+}
+
+// File internals
 
 func parseTemplate(id tmplID) *template.Template {
 	log.Println("Parsing template:", id)

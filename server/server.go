@@ -47,7 +47,7 @@ func parseFlags() {
 	flag.IntVar(&port, "port", 80, "Server port for serving HTTP")
 	flag.IntVar(&secureport, "secureport", 443, "Server port for serving HTTPS")
 	flag.BoolVar(&devMode, "dev", false, "Activates development mode")
-	flag.StringVar(&publicDir, "dir", "frontend/build", "the directory to serve files from. Defaults to 'frontend/build'")
+	flag.StringVar(&publicDir, "dir", "static", "the directory to serve files from. Defaults to 'static'")
 	flag.Parse()
 }
 
@@ -57,16 +57,15 @@ func Start(uc cah.Usecases) {
 
 	router := mux.NewRouter()
 	//Any non found paths should redirect to index. React-router will handle those.
-	router.NotFoundHandler = http.HandlerFunc(serveFrontend(publicDir + "/index.html"))
+	router.NotFoundHandler = http.HandlerFunc(simpleTmplHandler(notFoundPageTmpl))
 
 	setRestRouterHandlers(router)
 	setTemplateRouterHandlers(router)
 
 	//Static files handler
 	fs := http.FileServer(http.Dir(publicDir))
-	router.PathPrefix("/static").Handler(fs)
-	// Known files. We have to define them one by one since we can't use PathPrefix("/"),
-	// as that would make the NotFoundHandler stop working.
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
+	// Known files:
 	router.PathPrefix("/favicon.").Handler(fs)
 	router.Path("/manifest.json").Handler(fs)
 
@@ -132,12 +131,6 @@ func StartServer(r *mux.Router) {
 		log.Println("Server will listen and serve without TLS")
 		log.Printf("Starting http server in port %d\n", port)
 		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
-	}
-}
-
-func serveFrontend(path string) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, req *http.Request) {
-		http.ServeFile(w, req, path)
 	}
 }
 
