@@ -48,6 +48,7 @@ type lobbyPageCtx struct {
 	LoggedUser          cah.User
 	Game                cah.Game
 	AvailableExpansions []string
+	Flashes             []interface{}
 }
 
 func lobbyPageHandler(w http.ResponseWriter, req *http.Request) {
@@ -67,6 +68,7 @@ func lobbyPageHandler(w http.ResponseWriter, req *http.Request) {
 		LoggedUser:          user,
 		Game:                game,
 		AvailableExpansions: usecase.Card.AvailableExpansions(),
+		Flashes:             getFlashes("", w, req),
 	})
 }
 

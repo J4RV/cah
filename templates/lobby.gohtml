@@ -1,7 +1,9 @@
 {{define "content"}}
 <header class="header">
   <div>{{.LoggedUser.Username}}</div>
-  <title>Cards Against Humanity</title>
+  <a href="/">
+    <title>Cards Against Humanity</title>
+  </a>
   <div class="grid-item-right" style="text-align: right;">
     <a href="https://github.com/J4RV">
       <button class="link-button">J4RV's GitHub</button>
@@ -28,28 +30,39 @@
 
   {{if eq .LoggedUser.ID .Game.Owner.ID }}
   <form>
+
+    {{range $flash := .Flashes}}
+      <p class="err-msg">{{$flash}}</p>
+    {{end}}
+
     <h6>Expansions</h6>
-    <div class="expansions">
+    <fieldset class="expansions">
       {{range $i, $exp := .AvailableExpansions}}
         <div>
           <input type="checkbox" id="expansion-{{$i}}" name="expansion-{{$i}}">
           <label class="label-checkbox" for="expansion-{{$i}}">{{$exp}}</label>
         </div>
       {{end}}
-    </div>
+    </fieldset>
     
-    <div>
+    <fieldset>
       <label for="handsize">Hand size</label>
       <input type="number" id="handsize" name="handsize">
-    </div>
+    </fieldset>
     
-    <div>
+    <fieldset>
       <label for="maxrounds">Max rounds</label>
       <input type="number" id="maxrounds" name="maxrounds">
-    </div>
+    </fieldset>
+    
+    <fieldset>
+      <input type="checkbox" id="randomfirstczar" name="randomfirstczar">
+      <label for="randomfirstczar">Random first Czar</label>
+    </fieldset>
 
     {{if eq .LoggedUser.ID .Game.Owner.ID}}
       <button class="primary-button">START</button>
+      <a href="/games" class="link-button" style="margin-left: 8px;">CANCEL</a>
     {{end}}
   </form>
   {{end}}
@@ -81,15 +94,17 @@
 .expansions {
   display: grid;
   grid-template-columns: 10rem 10rem 10rem;
-  margin: 8px 0 2rem 0;
   grid-gap: 8px;
 }
 
 form {
-  padding: 8px;
   margin: 8px auto;
   text-align: left;
   max-width: 600px;
+}
+
+label {
+  width: 8rem;
 }
 
 title {

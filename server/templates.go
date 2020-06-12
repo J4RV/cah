@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-type tmplID int
+type tmplID string
 
 const tmplDir = "templates/"
 
@@ -20,9 +20,9 @@ var tmplBase = []string{
 // Template definitions
 
 const (
-	loginPageTmpl tmplID = iota
-	gamesPageTmpl
-	lobbyPageTmpl
+	loginPageTmpl tmplID = "Login"
+	gamesPageTmpl tmplID = "Games"
+	lobbyPageTmpl tmplID = "Lobby"
 )
 
 var templateFiles = map[tmplID][]string{
@@ -52,7 +52,7 @@ func execTemplate(id tmplID, w io.Writer, data interface{}) {
 }
 
 func parseTemplate(id tmplID) *template.Template {
-	log.Println("Parsing template with id: ", id)
+	log.Println("Parsing template:", id)
 	return template.Must(template.New("base.gohtml").Funcs(tmplFuncMap).ParseFiles(templateFiles[id]...))
 }
 

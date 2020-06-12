@@ -65,18 +65,38 @@ h6 {
 
 /* Forms */
 
-input[type=text], input[type=password] {
-  margin-bottom: 1em;
+form {
+  background: var(--color-font);
+  color: var(--color-bg);
+  padding: 16px;
+  border-radius: 4px;
+}
+
+fieldset {
+  margin: 0 0 1rem 0;
+}
+
+input {
   border: none;
   border-bottom: solid 1px var(--color-bg);
   border-radius: 0px;
   background: transparent;
-  width: 100%;
   box-sizing: border-box;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-size: 1rem;
 }
 
-input[type=text]:focus, input[type=password]:focus {
+input:focus {
   border-color: var(--color-secondary);
+}
+
+input[type=text], input[type=password] {
+  width: 100%;
+}
+
+input[type=number] {
+  -moz-appearance:textfield;
+  width: 4rem;
 }
 
 button {
@@ -105,7 +125,7 @@ button:active {
   border: solid 1px var(--color-gray);
   border-radius: 4px;
   font-size: 1rem;
-  color: var(--color-primary-text);
+  color: inherit;
   background: transparent;
 }
 

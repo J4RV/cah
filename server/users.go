@@ -12,7 +12,8 @@ import (
 
 const wrongUserOrPassMsg = "The username or password you entered is incorrect."
 const notLoggedInMsg = "You need to be logged in to see that page."
-const afterLoginRedirect = "/game/list/open"
+const loginRedirect = "/login"
+const afterLoginRedirect = "/games"
 const loginFlashKey = "login-flash"
 
 const sessionAge = 60 * 15                    // 15 min
@@ -25,7 +26,7 @@ const rememberMeSessionAge = 60 * 60 * 24 * 7 // 1 week
 func loginPageHandler(w http.ResponseWriter, req *http.Request) {
 	_, err := userFromSession(w, req)
 	if err == nil {
-		http.Redirect(w, req, "/games", http.StatusFound)
+		http.Redirect(w, req, afterLoginRedirect, http.StatusFound)
 		return
 	}
 	execTemplate(loginPageTmpl, w, getFlashes(loginFlashKey, w, req))
@@ -36,13 +37,13 @@ func processLogin(w http.ResponseWriter, req *http.Request) {
 	username := req.Form["username"]
 	password := req.Form["password"]
 	if len(username) != 1 || len(password) != 1 {
-		http.Redirect(w, req, "/login", http.StatusFound)
+		http.Redirect(w, req, loginRedirect, http.StatusFound)
 		return
 	}
 	u, ok := usecase.User.Login(username[0], password[0])
 	if !ok {
 		addFlashMsg(wrongUserOrPassMsg, loginFlashKey, w, req)
-		http.Redirect(w, req, "/login", http.StatusFound)
+		http.Redirect(w, req, loginRedirect, http.StatusFound)
 		return
 	}
 	log.Printf("User %s with id %d just logged in!", u.Username, u.ID)
@@ -64,7 +65,7 @@ func processRegister(w http.ResponseWriter, req *http.Request) {
 	u, err := usecase.User.Register(username[0], password[0])
 	if err != nil {
 		addFlashMsg(err.Error(), loginFlashKey, w, req)
-		http.Redirect(w, req, "/login", http.StatusFound)
+		http.Redirect(w, req, loginRedirect, http.StatusFound)
 		return
 	}
 	log.Printf("User %s with id %d just registered!", u.Username, u.ID)
