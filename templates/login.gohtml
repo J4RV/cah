@@ -1,38 +1,6 @@
-{{define "style"}}
-<style>
-.main {
-  text-align: center;
-  margin-top: 24px;
-}
-.login-form {
-  margin-top: 64px;
-  display: grid;
-  justify-content: center;
-  grid-template-columns: repeat(2, auto);
-  grid-gap: 16px;
-}
-.col-2 {
-  grid-column: 2;
-}
-.login-btn {
-  margin: 0 8px;
-}
-.err-msg {
-  grid-column: span 2;
-  color: var(--color-error);
-  margin-bottom: 16px;
-}
-footer {
-  text-align: center;
-  margin-top: 64px;
-}
-</style>
-{{end}}
-
 {{define "content"}}
-
 <div class="main">
-  <h2>Cards Against Humanity</h2>
+  <h1>Cards Against Humanity</h1>
   <h4>A party game for horrible people.</h4>
   <form class="login-form" action="/api/user/login" method="post">
     {{range $flash := .}}
@@ -71,10 +39,41 @@ footer {
   Official Store
 </a>
 </footer>
+{{end}}
 
+{{define "script"}}
 <script>
 randomRotateCards()
 </script>
-
 {{end}}
 
+{{define "style"}}
+<style>
+.main {
+  text-align: center;
+  margin-top: 24px;
+}
+.login-form {
+  margin-top: 64px;
+  display: grid;
+  justify-content: center;
+  grid-template-columns: repeat(2, auto);
+  grid-gap: 16px;
+}
+.col-2 {
+  grid-column: 2;
+}
+.login-btn {
+  margin: 0 8px;
+}
+.err-msg {
+  grid-column: span 2;
+  color: var(--color-error);
+  margin-bottom: 16px;
+}
+footer {
+  text-align: center;
+  margin-top: 64px;
+}
+</style>
+{{end}}

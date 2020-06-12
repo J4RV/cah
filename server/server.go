@@ -110,6 +110,7 @@ func setTemplateRouterHandlers(r *mux.Router) {
 	r.HandleFunc("/", loginPageHandler)
 	r.HandleFunc("/login", loginPageHandler)
 	r.HandleFunc("/games", gamesPageHandler)
+	r.HandleFunc("/lobby/{gameID}", lobbyPageHandler)
 }
 
 func StartServer(r *mux.Router) {

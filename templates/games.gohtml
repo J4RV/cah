@@ -1,51 +1,4 @@
-{{define "style"}}
-<style>
-.main {
-  text-align: center;
-  margin-top: 24px;
-}
-
-.header {
-  display: grid;
-  grid-template-columns: 35% 30% 35%;
-  padding: 8px;
-  align-items: center;
-  background: var(--color-black);
-  color: var(--color-white);
-}
-
-title {
-  display: block;
-  text-align: center;
-}
-
-table {
-  margin: 1rem auto 4rem auto;
-  text-align: left;
-}
-
-th {
-  font-weight: 500;
-}
-
-th, td {    
-  padding: 8px 24px;
-  border-bottom: 1px var(--color-gray) solid;
-}
-
-@media (max-width: 749px) {
-  title {
-    display: none;
-  }
-  .header {
-    grid-template-columns: 20% 80%;
-  }
-}
-</style>
-{{end}}
-
 {{define "content"}}
-
 <header class="header">
   <div>{{.LoggedUser.Username}}</div>
   <title>Cards Against Humanity</title>
@@ -97,7 +50,7 @@ th, td {
       <tr>
         <td>{{$game.Name}}</td>
         <td>
-          <a href="/game/room/{{$game.ID}}">
+          <a href="/lobby/{{$game.ID}}">
             <button>ENTER</button>
           </a>
         </td>
@@ -107,17 +60,56 @@ th, td {
   {{else}}
     <p>None</p>
   {{end}}
+
   <a href="/game/list/create">
     <button class="primary-button">CREATE NEW GAME</button>
   </a>
 
 </div>
-
-<footer>
-</footer>
-
-<script>
-</script>
-
 {{end}}
 
+{{define "style"}}
+<style>
+.main {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 35% 30% 35%;
+  padding: 8px;
+  align-items: center;
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+title {
+  display: block;
+  text-align: center;
+}
+
+table {
+  margin: 1rem auto 4rem auto;
+  text-align: left;
+}
+
+th {
+  font-weight: 500;
+}
+
+th, td {    
+  padding: 8px 24px;
+  border-bottom: 1px var(--color-gray) solid;
+}
+
+@media (max-width: 749px) {
+  title {
+    display: none;
+  }
+  .header {
+    grid-template-columns: 20% 80%;
+  }
+}
+</style>
+{{end}}

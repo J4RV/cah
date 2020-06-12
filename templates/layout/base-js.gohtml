@@ -7,5 +7,27 @@ function randomRotateCards(){
   })
 }
 
+// "Button checkboxes"
+
+Array.prototype.forEach.call(document.getElementsByClassName("label-checkbox"), function(label){
+  let checkbox = getSingleElementByName(label.htmlFor)
+  if (checkbox) checkbox.style.display = "none"
+  label.onclick = () => checkboxLabelOnClick(label)
+})
+
+function checkboxLabelOnClick(label){
+  let checkbox = getSingleElementByName(label.htmlFor)
+  if (checkbox.checked) {
+    label.classList.remove("glowing")
+  } else {
+    label.classList.add("glowing")
+  }
+}
+
+function getSingleElementByName(name) {
+  let elems = document.getElementsByName(name)
+  return elems.length ? elems[0] : null
+}
+
 </script>
 {{end}}

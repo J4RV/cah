@@ -13,6 +13,7 @@ import (
 const wrongUserOrPassMsg = "The username or password you entered is incorrect."
 const notLoggedInMsg = "You need to be logged in to see that page."
 const afterLoginRedirect = "/game/list/open"
+const loginFlashKey = "login-flash"
 
 const sessionAge = 60 * 15                    // 15 min
 const rememberMeSessionAge = 60 * 60 * 24 * 7 // 1 week
@@ -21,9 +22,12 @@ const rememberMeSessionAge = 60 * 60 * 24 * 7 // 1 week
 	TEMPLATE HANDLERS
 */
 
-const loginFlashKey = "login-flash"
-
 func loginPageHandler(w http.ResponseWriter, req *http.Request) {
+	_, err := userFromSession(w, req)
+	if err == nil {
+		http.Redirect(w, req, "/games", http.StatusFound)
+		return
+	}
 	execTemplate(loginPageTmpl, w, getFlashes(loginFlashKey, w, req))
 }
 
@@ -114,7 +118,7 @@ var cookies *sessions.CookieStore
 
 func init() {
 	if devMode {
-		cookies = sessions.NewCookieStore()
+		cookies = sessions.NewCookieStore([]byte("dev-mode"))
 		return
 	}
 

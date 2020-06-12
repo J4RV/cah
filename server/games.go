@@ -17,6 +17,8 @@ const minWhites = 34
 const minBlacks = 8
 const minHandSize = 5
 const maxHandSize = 30
+const gameDoesntExistMsg = "That game does not exist."
+const gamesFlashKey = "games-flash"
 
 /*
 	TEMPLATE HANDLERS
@@ -39,6 +41,32 @@ func gamesPageHandler(w http.ResponseWriter, req *http.Request) {
 		LoggedUser:      user,
 		InProgressGames: usecase.Game.InProgressForUser(user),
 		OpenGames:       usecase.Game.AllOpen(),
+	})
+}
+
+type lobbyPageCtx struct {
+	LoggedUser          cah.User
+	Game                cah.Game
+	AvailableExpansions []string
+}
+
+func lobbyPageHandler(w http.ResponseWriter, req *http.Request) {
+	user, err := userFromSession(w, req)
+	if err != nil {
+		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
+	}
+	game, err := gameFromRequest(req)
+	if err != nil {
+		addFlashMsg(gameDoesntExistMsg, gamesFlashKey, w, req)
+		http.Redirect(w, req, "/games", http.StatusFound)
+		return
+	}
+	execTemplate(lobbyPageTmpl, w, lobbyPageCtx{
+		LoggedUser:          user,
+		Game:                game,
+		AvailableExpansions: usecase.Card.AvailableExpansions(),
 	})
 }
 

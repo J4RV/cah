@@ -22,11 +22,13 @@ var tmplBase = []string{
 const (
 	loginPageTmpl tmplID = iota
 	gamesPageTmpl
+	lobbyPageTmpl
 )
 
 var templateFiles = map[tmplID][]string{
 	loginPageTmpl: append(tmplBase, tmplDir+"login.gohtml"),
 	gamesPageTmpl: append(tmplBase, tmplDir+"games.gohtml"),
+	lobbyPageTmpl: append(tmplBase, tmplDir+"lobby.gohtml"),
 }
 
 // Functions to be called from outside this file to render the templates:
@@ -51,10 +53,12 @@ func execTemplate(id tmplID, w io.Writer, data interface{}) {
 
 func parseTemplate(id tmplID) *template.Template {
 	log.Println("Parsing template with id: ", id)
-	return template.Must(template.New("base.gohtml").Funcs(template.FuncMap{
-		"safeHTML": safeHTML,
-		"safeCSS":  safeCSS,
-	}).ParseFiles(templateFiles[id]...))
+	return template.Must(template.New("base.gohtml").Funcs(tmplFuncMap).ParseFiles(templateFiles[id]...))
+}
+
+var tmplFuncMap = template.FuncMap{
+	"safeHTML": safeHTML,
+	"safeCSS":  safeCSS,
 }
 
 func safeHTML(b string) template.HTML {

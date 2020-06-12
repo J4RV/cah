@@ -1,0 +1,123 @@
+{{define "content"}}
+<header class="header">
+  <div>{{.LoggedUser.Username}}</div>
+  <title>Cards Against Humanity</title>
+  <div class="grid-item-right" style="text-align: right;">
+    <a href="https://github.com/J4RV">
+      <button class="link-button">J4RV's GitHub</button>
+    </a>
+    <a href="https://store.cardsagainsthumanity.com/">
+      <button class="link-button">Official Store</button>
+    </a>
+    <a href="/api/user/logout">
+      <button>Logout</button>
+    </a>
+  </div>
+</header>
+
+<div class="main">
+
+  <h2>{{.Game.Name}}</h2>
+  <h6>Waiting for the game creator to start the game</h6>
+  <p>Creator: {{.Game.Owner.Username}} </p>
+  <p>Players: 
+  {{range $user := .Game.Users}}
+    [ {{$user.Username}} ] 
+  {{end}}
+  </p>
+
+  {{if eq .LoggedUser.ID .Game.Owner.ID }}
+  <form>
+    <h6>Expansions</h6>
+    <div class="expansions">
+      {{range $i, $exp := .AvailableExpansions}}
+        <div>
+          <input type="checkbox" id="expansion-{{$i}}" name="expansion-{{$i}}">
+          <label class="label-checkbox" for="expansion-{{$i}}">{{$exp}}</label>
+        </div>
+      {{end}}
+    </div>
+    
+    <div>
+      <label for="handsize">Hand size</label>
+      <input type="number" id="handsize" name="handsize">
+    </div>
+    
+    <div>
+      <label for="maxrounds">Max rounds</label>
+      <input type="number" id="maxrounds" name="maxrounds">
+    </div>
+
+    {{if eq .LoggedUser.ID .Game.Owner.ID}}
+      <button class="primary-button">START</button>
+    {{end}}
+  </form>
+  {{end}}
+
+</div>
+{{end}}
+
+{{define "script"}}
+<script>
+</script>
+{{end}}
+
+{{define "style"}}
+<style>
+.main {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 35% 30% 35%;
+  padding: 8px;
+  align-items: center;
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.expansions {
+  display: grid;
+  grid-template-columns: 10rem 10rem 10rem;
+  margin: 8px 0 2rem 0;
+  grid-gap: 8px;
+}
+
+form {
+  padding: 8px;
+  margin: 8px auto;
+  text-align: left;
+  max-width: 600px;
+}
+
+title {
+  display: block;
+  text-align: center;
+}
+
+table {
+  margin: 1rem auto 4rem auto;
+  text-align: left;
+}
+
+th {
+  font-weight: 500;
+}
+
+th, td {    
+  padding: 8px 24px;
+  border-bottom: 1px var(--color-gray) solid;
+}
+
+@media (max-width: 749px) {
+  title {
+    display: none;
+  }
+  .header {
+    grid-template-columns: 20% 80%;
+  }
+}
+</style>
+{{end}}
