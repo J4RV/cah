@@ -156,28 +156,23 @@ func gameToResponse(g cah.Game) gameRoomResponse {
 CREATE GAME
 */
 
-type createGamePayload struct {
-	Name     string `json:"name"`
-	Password string `json:"password,omitempty"`
-}
-
 func createGame(w http.ResponseWriter, req *http.Request) error {
+	req.ParseForm()
+	name := req.Form["name"]
+	password := optionalSingleFormParam(req.Form["password"])
+	if err := requiredSingleFormParams(name); err != nil {
+		return err
+	}
 	// User is logged
 	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
-	// Decode user's payload
-	var payload createGamePayload
-	decoder := json.NewDecoder(req.Body)
-	err = decoder.Decode(&payload)
-	if err != nil {
-		return errors.New("Misconstructed payload")
-	}
-	err = usecase.Game.Create(u, payload.Name, payload.Password)
+	g, err := usecase.Game.Create(u, name[0], password)
 	if err != nil {
 		return err
 	}
+	http.Redirect(w, req, fmt.Sprint("/games/", g.ID), http.StatusFound)
 	return nil
 }
 

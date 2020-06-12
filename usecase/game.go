@@ -20,10 +20,10 @@ func NewGameUsecase(store cah.GameStore) *gameController {
 	}
 }
 
-func (control gameController) Create(owner cah.User, name, pass string) error {
+func (control gameController) Create(owner cah.User, name, pass string) (cah.Game, error) {
 	trimmed := strings.TrimSpace(name)
 	if trimmed == "" {
-		return errors.New("A game name cannot be blank")
+		return cah.Game{}, errors.New("A game name cannot be blank")
 	}
 	game := cah.Game{
 		Owner:  owner,

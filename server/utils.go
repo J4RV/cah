@@ -2,11 +2,16 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/j4rv/cah"
 )
+
+const missingRequiredParamsMsg = "Missing required parameters"
+
+var errMissingRequiredParam = errors.New("missing required param")
 
 func writeResponse(w http.ResponseWriter, obj interface{}) {
 	j, err := json.Marshal(obj)
@@ -32,4 +37,20 @@ func dereferenceBlackCards(bcs []*cah.BlackCard) []cah.BlackCard {
 		res[i] = *bc
 	}
 	return res
+}
+
+func requiredSingleFormParams(params ...[]string) error {
+	for _, param := range params {
+		if len(param) != 1 {
+			return errMissingRequiredParam
+		}
+	}
+	return nil
+}
+
+func optionalSingleFormParam(param []string) string {
+	if len(param) == 0 {
+		return ""
+	}
+	return param[0]
 }

@@ -36,8 +36,8 @@ func processLogin(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	username := req.Form["username"]
 	password := req.Form["password"]
-	if len(username) != 1 || len(password) != 1 {
-		http.Redirect(w, req, loginRedirect, http.StatusFound)
+	if err := requiredSingleFormParams(username, password); err != nil {
+		http.Error(w, missingRequiredParamsMsg, http.StatusUnauthorized)
 		return
 	}
 	u, ok := usecase.User.Login(username[0], password[0])
@@ -58,8 +58,8 @@ func processRegister(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	username := req.Form["username"]
 	password := req.Form["password"]
-	if len(username) != 1 || len(password) != 1 {
-		http.Error(w, "Unexpected amount of form vals.", http.StatusUnauthorized)
+	if err := requiredSingleFormParams(username, password); err != nil {
+		http.Error(w, missingRequiredParamsMsg, http.StatusUnauthorized)
 		return
 	}
 	u, err := usecase.User.Register(username[0], password[0])

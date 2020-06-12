@@ -20,15 +20,15 @@ func GetGameStore() *gameMemStore {
 	return gameStore
 }
 
-func (store *gameMemStore) Create(g cah.Game) error {
+func (store *gameMemStore) Create(g cah.Game) (cah.Game, error) {
 	store.Lock()
 	defer store.Unlock()
 	if g.ID != 0 {
-		return errors.New("Tried to create a game but its ID was not zero")
+		return cah.Game{}, errors.New("Tried to create a game but its ID was not zero")
 	}
 	g.ID = store.nextID()
 	store.games[g.ID] = g
-	return nil
+	return g, nil
 }
 
 func (store *gameMemStore) ByID(id int) (cah.Game, error) {

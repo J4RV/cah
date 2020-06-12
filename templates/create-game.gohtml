@@ -2,22 +2,22 @@
 {{template "logged-header" .}}
 <div class="main">
 
-  <h2>Create a new game</h2>
+  <h4>Create a new game</h4>
 
-  <form>
+  <form action="/api/game/create" method="post">
     {{range $flash := .Flashes}}
       <p class="err-msg">{{$flash}}</p>
     {{end}}
     
     <fieldset>
-      <b><label for="name">Name</label></b>
+      <div><b><label for="name">Name</label></b></div>
       <input type="text" id="name" name="name" value="">
       <br><small>The name for the game lobby.</small>
     </fieldset>
     
     <fieldset>
-      <b><label for="name">Password</label></b>
-      <input type="password" id="name" name="name" value="">
+      <div><b><label for="password">Password</label></b></div>
+      <input type="password" id="password" name="password" value="">
       <br><small>Leave it empty for an open lobby.</small>
     </fieldset>
 
