@@ -1,7 +1,0 @@
-{
-  "parser": "babel-eslint",
-  "editor.tabSize": 2,
-  "javascript.updateImportsOnFileMove.enabled": "always",
-  "editor.formatOnSave": true,
-  "standard.autoFixOnSave": true
-}
