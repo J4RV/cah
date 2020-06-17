@@ -36,7 +36,7 @@ func processLogin(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	username := req.Form["username"]
 	password := req.Form["password"]
-	if err := requiredSingleFormParams(username, password); err != nil {
+	if err := requiredFormParams(username, password); err != nil {
 		http.Error(w, missingRequiredParamsMsg, http.StatusUnauthorized)
 		return
 	}
@@ -58,7 +58,7 @@ func processRegister(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	username := req.Form["username"]
 	password := req.Form["password"]
-	if err := requiredSingleFormParams(username, password); err != nil {
+	if err := requiredFormParams(username, password); err != nil {
 		http.Error(w, missingRequiredParamsMsg, http.StatusUnauthorized)
 		return
 	}

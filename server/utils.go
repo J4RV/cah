@@ -39,9 +39,9 @@ func dereferenceBlackCards(bcs []*cah.BlackCard) []cah.BlackCard {
 	return res
 }
 
-func requiredSingleFormParams(params ...[]string) error {
+func requiredFormParams(params ...[]string) error {
 	for _, param := range params {
-		if len(param) != 1 {
+		if len(param) == 0 {
 			return errMissingRequiredParam
 		}
 	}

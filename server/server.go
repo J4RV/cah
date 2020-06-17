@@ -89,7 +89,7 @@ func setRestRouterHandlers(r *mux.Router) {
 		s.Handle("/create", srvHandler(createGame)).Methods("POST")
 		s.Handle("/{gameID}/join", srvHandler(joinGame)).Methods("POST")
 		s.Handle("/{gameID}/leave", srvHandler(leaveGame)).Methods("POST")
-		s.Handle("/start", srvHandler(startGame)).Methods("POST")
+		s.Handle("/{gameID}/start", srvHandler(startGame)).Methods("POST")
 		s.Handle("/available-expansions", srvHandler(availableExpansions)).Methods("GET")
 	}
 

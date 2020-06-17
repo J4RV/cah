@@ -1,12 +1,6 @@
 {{define "basejs"}}
 <script>
 
-// Vue config
-
-if (Vue) {
-  Vue.config.delimiters = ['<{', '}>']
-}
-
 // Utility global funcs
 
 function randomRotateCards(){
@@ -17,14 +11,15 @@ function randomRotateCards(){
 
 // "Button checkboxes"
 
-document.querySelectorAll(".label-checkbox").forEach(function(label){
-  let checkbox = getSingleElementByName(label.htmlFor)
-  if (checkbox) checkbox.style.display = "none"
-  label.onclick = () => checkboxLabelOnClick(label)
-})
+function initCheckboxLabels() {
+  document.querySelectorAll(".label-checkbox").forEach(function(label){
+    let checkbox = document.querySelector(`#${label.htmlFor}`)
+    if (checkbox) checkbox.style.display = "none"
+    label.onclick = () => checkboxLabelOnClick(label, checkbox)
+  })
+}
 
-function checkboxLabelOnClick(label){
-  let checkbox = getSingleElementByName(label.htmlFor)
+function checkboxLabelOnClick(label, checkbox){
   if (checkbox.checked) {
     label.classList.remove("glowing")
   } else {
@@ -32,10 +27,8 @@ function checkboxLabelOnClick(label){
   }
 }
 
-function getSingleElementByName(name) {
-  let elems = document.getElementsByName(name)
-  return elems.length ? elems[0] : null
-}
+// Always do:
+randomRotateCards()
 
 </script>
 {{end}}

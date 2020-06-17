@@ -5,16 +5,19 @@
 
   <h2>{{.Game.Name}}</h2>
   <h6>Waiting for the game creator to start the game</h6>
-  <p>Creator: {{.Game.Owner.Username}} </p>
-  <p>Players:</p>
-  <ol>
-    <li v-for="player in players">
-      [ ${ player } ]
-    </li>
-  </ol>
+
+  <div class="card black-card floating players-info">
+    <p>Players:</p>
+    <ol>
+      <li v-for="player in players">
+        [ ${ player } ]
+      </li>
+    </ol>
+    <p class="card-expansion-text">Creator: {{.Game.Owner.Username}}</p>
+  </div>
 
   {{if eq .LoggedUser.ID .Game.Owner.ID }}
-  <form>
+  <form action="/api/game/{{.Game.ID}}/start" method="post">
 
     {{range $flash := .Flashes}}
       <p class="err-msg">{{$flash}}</p>
@@ -23,10 +26,10 @@
     <fieldset>
       <p><b>Expansions</b></p>
       <div class="expansions">
-      {{range $exp := .AvailableExpansions}}
+      {{range $i, $exp := .AvailableExpansions}}
         <div class="expansion">
-          <input type="checkbox" id="expansion-{{$exp}}" name="expansion-{{$exp}}" value="{{$exp}}">
-          <label class="label-checkbox" for="expansion-{{$exp}}">{{$exp}}</label>
+          <input type="checkbox" id="expansion-{{$i}}" name="expansion" value="{{$exp}}">
+          <label class="label-checkbox" for="expansion-{{$i}}">{{$exp}}</label>
         </div>
       {{end}}
       </div>
@@ -99,7 +102,7 @@ var app = new Vue({
   }
 })
 
-// polling the lobby status
+// lobby status polling
 
 function updateAppData(){
   fetch("/api/game/{{.Game.ID}}/lobby-state")
@@ -110,7 +113,9 @@ function updateAppData(){
     .catch(err => console.error(err))
 }
 updateAppData()
-setInterval(updateAppData, 1000);
+setInterval(updateAppData, 2000)
+
+initCheckboxLabels()
 
 </script>
 {{end}}
@@ -124,6 +129,10 @@ setInterval(updateAppData, 1000);
 
 .expansion {
   margin: 4px;
+}
+
+.players-info {
+  margin: 1rem auto;
 }
 </style>
 {{end}}
