@@ -1,0 +1,13 @@
+{{define "import-vue"}}
+
+{{if devMode}}
+  <script type='text/javascript' src="/static/js/vue-dev.js"></script>
+{{else}}
+  <script type='text/javascript' src="/static/js/vue-min.js"></script>
+{{end}}
+
+<script>
+const VUE_DELIMITERS = ['${', '}']
+</script>
+
+{{end}}

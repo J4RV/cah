@@ -1,6 +1,14 @@
 {{define "basejs"}}
 <script>
 
+// Vue config
+
+if (Vue) {
+  Vue.config.delimiters = ['<{', '}>']
+}
+
+// Utility global funcs
+
 function randomRotateCards(){
   document.querySelectorAll(".card").forEach(function(elem){
     elem.style.transform = `rotate(${Math.random() * 5 - 2.5}deg)`;

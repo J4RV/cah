@@ -85,12 +85,10 @@ func setRestRouterHandlers(r *mux.Router) {
 
 	{
 		s := restRouter.PathPrefix("/game").Subrouter()
-		s.Handle("/{gameID}/room-state", srvHandler(roomState)).Methods("GET")
-		s.Handle("/list-open", srvHandler(openGames)).Methods("GET")
-		s.Handle("/list-in-progress", srvHandler(inProgressGames)).Methods("GET")
+		s.Handle("/{gameID}/lobby-state", srvHandler(lobbyState)).Methods("GET")
 		s.Handle("/create", srvHandler(createGame)).Methods("POST")
-		s.Handle("/join", srvHandler(joinGame)).Methods("POST")
-		//s.Handle("/Leave", srvHandler(playCards)).Methods("POST")
+		s.Handle("/{gameID}/join", srvHandler(joinGame)).Methods("POST")
+		s.Handle("/{gameID}/leave", srvHandler(leaveGame)).Methods("POST")
 		s.Handle("/start", srvHandler(startGame)).Methods("POST")
 		s.Handle("/available-expansions", srvHandler(availableExpansions)).Methods("GET")
 	}
@@ -113,6 +111,7 @@ func setTemplateRouterHandlers(r *mux.Router) {
 	r.HandleFunc("/games/{gameID}", lobbyPageHandler)
 }
 
+// StartServer starts the server using the provided router
 func StartServer(r *mux.Router) {
 	// For Heroku
 	envPort := os.Getenv("PORT")

@@ -104,35 +104,12 @@ type gameRoomResponse struct {
 	StateID     int      `json:"stateID"`
 }
 
-func roomState(w http.ResponseWriter, req *http.Request) error {
+func lobbyState(w http.ResponseWriter, req *http.Request) error {
 	g, err := gameFromRequest(req)
 	if err != nil {
 		return err
 	}
 	writeResponse(w, gameToResponse(g))
-	return nil
-}
-
-func openGames(w http.ResponseWriter, req *http.Request) error {
-	response := []gameRoomResponse{}
-	for _, g := range usecase.Game.AllOpen() {
-		response = append(response, gameToResponse(g))
-	}
-	writeResponse(w, response)
-	return nil
-}
-
-func inProgressGames(w http.ResponseWriter, req *http.Request) error {
-	// User is logged
-	u, err := userFromSession(w, req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-	}
-	response := []gameRoomResponse{}
-	for _, g := range usecase.Game.InProgressForUser(u) {
-		response = append(response, gameToResponse(g))
-	}
-	writeResponse(w, response)
 	return nil
 }
 
@@ -177,12 +154,8 @@ func createGame(w http.ResponseWriter, req *http.Request) error {
 }
 
 /*
-JOIN GAME
+JOIN AND LEAVE GAME
 */
-
-type joinGamePayload struct {
-	ID int `json:"id"`
-}
 
 func joinGame(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
@@ -190,26 +163,35 @@ func joinGame(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
-	// Decode user's payload
-	var payload joinGamePayload
-	decoder := json.NewDecoder(req.Body)
-	err = decoder.Decode(&payload)
+	game, err := gameFromRequest(req)
 	if err != nil {
-		return errors.New("Misconstructed payload")
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	g, err := usecase.Game.ByID(payload.ID)
+	err = usecase.Game.UserJoins(u, game)
 	if err != nil {
 		return err
 	}
-	err = usecase.Game.UserJoins(u, g)
+	http.Redirect(w, req, fmt.Sprint("/games/", game.ID), http.StatusFound)
+	return nil
+}
+
+func leaveGame(w http.ResponseWriter, req *http.Request) error {
+	// User is logged
+	_, err := userFromSession(w, req)
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusForbidden)
 	}
+	game, err := gameFromRequest(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+	addFlashMsg("Not implemented! :P", gamesFlashKey, w, req)
+	http.Redirect(w, req, fmt.Sprint("/games/", game.ID), http.StatusFound)
 	return nil
 }
 
 /*
-JOIN GAME
+START GAME
 */
 
 type startGamePayload struct {
@@ -272,7 +254,7 @@ func optionsFromCreateRequest(payload startGamePayload) ([]cah.Option, error) {
 	// HAND SIZE
 	handS := payload.HandSize
 	if handS < minHandSize || handS > maxHandSize {
-		return ret, fmt.Errorf("Hand size needs to be a number between %d and %d (both included).", minHandSize, maxHandSize)
+		return ret, fmt.Errorf("Hand size needs to be a number between %d and %d (both included)", minHandSize, maxHandSize)
 	}
 	ret = append(ret, usecase.Game.Options().HandSize(handS))
 	// RANDOM FIRST CZAR?

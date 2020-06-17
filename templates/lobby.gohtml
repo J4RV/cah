@@ -6,11 +6,12 @@
   <h2>{{.Game.Name}}</h2>
   <h6>Waiting for the game creator to start the game</h6>
   <p>Creator: {{.Game.Owner.Username}} </p>
-  <p>Players: 
-  {{range $user := .Game.Users}}
-    [ {{$user.Username}} ] 
-  {{end}}
-  </p>
+  <p>Players:</p>
+  <ol>
+    <li v-for="player in players">
+      [ ${ player } ]
+    </li>
+  </ol>
 
   {{if eq .LoggedUser.ID .Game.Owner.ID }}
   <form>
@@ -51,13 +52,67 @@
     </fieldset>
 
     {{if eq .LoggedUser.ID .Game.Owner.ID}}
-      <button class="primary-button">START</button>
-      <a href="/games" class="link-button" style="margin-left: 8px;">CANCEL</a>
+      <button v-if="players.length >= 3" class="primary-button" style="margin-right: 8px;">START</button>
+      <button v-if="players.length < 3" class="primary-button" style="margin-right: 8px;" disabled="disabled">START</button>
+      <a href="/games" class="link-button" >CANCEL</a>
     {{end}}
   </form>
+  {{else}}
+
+    <!-- JOIN FORM -->
+    <form action="/api/game/{{.Game.ID}}/join" v-if="!players.includes('{{.LoggedUser.Username}}')" method="post">
+
+      <h6>Join the game?</h6>
+
+      {{range $flash := .Flashes}}
+        <p class="err-msg">{{$flash}}</p>
+      {{end}}
+
+      <button class="primary-button">JOIN</button>
+    </form>
+
+    <!-- LEAVE FORM -->
+    <form action="/api/game/{{.Game.ID}}/leave" v-if="players.includes('{{.LoggedUser.Username}}')" method="post">
+
+      <h6>Leave the game?</h6>
+
+      {{range $flash := .Flashes}}
+        <p class="err-msg">{{$flash}}</p>
+      {{end}}
+
+      <button class="primary-button">LEAVE</button>
+    </form>
+
   {{end}}
 
 </div>
+{{end}}
+
+{{define "script"}}
+<script>
+var app = new Vue({
+  el: '.main',
+  delimiters: VUE_DELIMITERS,
+  // data type: gameRoomResponse
+  data: {
+    players: [],
+  }
+})
+
+// polling the lobby status
+
+function updateAppData(){
+  fetch("/api/game/{{.Game.ID}}/lobby-state")
+    .then(data => data.json())
+    .then(({players}) => {
+      app.players = players
+    })
+    .catch(err => console.error(err))
+}
+updateAppData()
+setInterval(updateAppData, 1000);
+
+</script>
 {{end}}
 
 {{define "style"}}

@@ -33,7 +33,7 @@ var templateFiles = map[tmplID][]string{
 	loginPageTmpl:      append(tmplBase, tmplDir+"login.gohtml"),
 	notFoundPageTmpl:   append(tmplBase, tmplDir+"404.gohtml"),
 	gamesPageTmpl:      append(tmplBase, tmplDir+"games.gohtml", tmplComponentsDir+"logged-header.gohtml"),
-	lobbyPageTmpl:      append(tmplBase, tmplDir+"lobby.gohtml", tmplComponentsDir+"logged-header.gohtml"),
+	lobbyPageTmpl:      append(tmplBase, tmplDir+"lobby.gohtml", tmplComponentsDir+"logged-header.gohtml", tmplComponentsDir+"import-vue.gohtml"),
 	createGamePageTmpl: append(tmplBase, tmplDir+"create-game.gohtml", tmplComponentsDir+"logged-header.gohtml"),
 }
 
@@ -73,6 +73,7 @@ func parseTemplate(id tmplID) *template.Template {
 var tmplFuncMap = template.FuncMap{
 	"safeHTML": safeHTML,
 	"safeCSS":  safeCSS,
+	"devMode":  func() bool { return devMode },
 }
 
 func safeHTML(b string) template.HTML {
