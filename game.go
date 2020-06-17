@@ -13,6 +13,7 @@ type GameUsecases interface {
 	AllOpen() []Game
 	InProgressForUser(User) []Game
 	UserJoins(User, Game) error
+	UserLeaves(User, Game) error
 	Start(Game, *GameState, ...Option) error
 	Options() GameOptions
 	//Start(gameID int, options ...Option) error

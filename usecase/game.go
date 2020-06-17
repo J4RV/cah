@@ -72,6 +72,17 @@ func (control gameController) UserJoins(user cah.User, game cah.Game) error {
 	return control.store.Update(game)
 }
 
+func (control gameController) UserLeaves(user cah.User, game cah.Game) error {
+	log.Printf("User '%s' leaves game '%s'\n", user.Username, game.Name)
+	for i, u := range game.Users {
+		if u.ID == user.ID {
+			game.Users = append(game.Users[:i], game.Users[i+1:]...)
+			return control.store.Update(game)
+		}
+	}
+	return errors.New("User not in game: " + user.Username)
+}
+
 func (control gameController) Start(g cah.Game, state *cah.GameState, opts ...cah.Option) error {
 	if len(g.Users) < 3 {
 		return fmt.Errorf("The minimum amount of players to start a game is 3, got: %d", len(g.Users))

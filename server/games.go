@@ -176,7 +176,7 @@ func joinGame(w http.ResponseWriter, req *http.Request) error {
 
 func leaveGame(w http.ResponseWriter, req *http.Request) error {
 	// User is logged
-	_, err := userFromSession(w, req)
+	u, err := userFromSession(w, req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	}
@@ -184,7 +184,10 @@ func leaveGame(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	addFlashMsg("Not implemented! :P", gamesFlashKey, w, req)
+	err = usecase.Game.UserLeaves(u, game)
+	if err != nil {
+		return err
+	}
 	http.Redirect(w, req, fmt.Sprint("/games/", game.ID), http.StatusFound)
 	return nil
 }
