@@ -2,14 +2,14 @@
 <script>
 
 function randomRotateCards(){
-  Array.prototype.forEach.call(document.getElementsByClassName("card"), function(elem){
+  document.querySelectorAll(".card").forEach(function(elem){
     elem.style.transform = `rotate(${Math.random() * 5 - 2.5}deg)`;
   })
 }
 
 // "Button checkboxes"
 
-Array.prototype.forEach.call(document.getElementsByClassName("label-checkbox"), function(label){
+document.querySelectorAll(".label-checkbox").forEach(function(label){
   let checkbox = getSingleElementByName(label.htmlFor)
   if (checkbox) checkbox.style.display = "none"
   label.onclick = () => checkboxLabelOnClick(label)
