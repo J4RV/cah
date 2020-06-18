@@ -15,7 +15,8 @@ var stateStore = &stateMemStore{
 	games: make(map[int]*cah.GameState),
 }
 
-func GetGameStateStore() *stateMemStore {
+// GetGameStateStore returns the global game state store
+func GetGameStateStore() cah.GameStateStore {
 	return stateStore
 }
 

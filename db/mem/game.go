@@ -16,7 +16,8 @@ var gameStore = &gameMemStore{
 	games: map[int]cah.Game{},
 }
 
-func GetGameStore() *gameMemStore {
+// GetGameStore returns the global game store
+func GetGameStore() cah.GameStore {
 	return gameStore
 }
 

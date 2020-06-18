@@ -16,7 +16,8 @@ var userStore = &userMemStore{
 	users: make(map[int]*cah.User),
 }
 
-func GetUserStore() *userMemStore {
+// GetUserStore returns the global user store
+func GetUserStore() cah.UserStore {
 	return userStore
 }
 

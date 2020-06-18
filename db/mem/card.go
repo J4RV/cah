@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sort"
 
 	"github.com/j4rv/cah"
 )
@@ -19,7 +20,8 @@ var cardStore = &cardMemStore{
 	blackCards: map[string][]*cah.BlackCard{},
 }
 
-func GetCardStore() *cardMemStore {
+// GetCardStore returns the global card store
+func GetCardStore() cah.CardStore {
 	return cardStore
 }
 
@@ -133,5 +135,6 @@ func (store *cardMemStore) AvailableExpansions() ([]string, error) {
 		keys[i] = expansion
 		i++
 	}
+	sort.Strings(keys)
 	return keys, nil
 }
