@@ -254,7 +254,7 @@ func startGame(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if g.Owner != u {
+	if g.Owner.ID != u.ID {
 		return errors.New("Only the game owner can start the game")
 	}
 	if err != nil {

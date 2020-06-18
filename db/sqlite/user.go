@@ -10,7 +10,7 @@ func NewUserStore(ds cah.DataStore) *userStore {
 	return &userStore{}
 }
 
-func (store *userStore) Create(username, password string) (cah.User, error) {
+func (store *userStore) Create(username string, password []byte) (cah.User, error) {
 	var user cah.User
 	_, err := db.Exec(`INSERT INTO user (username, password) VALUES (?, ?)`,
 		username, password)

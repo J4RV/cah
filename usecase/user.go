@@ -60,12 +60,12 @@ func (uc userController) Login(name, pass string) (cah.User, bool) {
 
 const userPassCost = 10
 
-func userPassHash(p string) (string, error) {
+func userPassHash(p string) ([]byte, error) {
 	b, err := bcrypt.GenerateFromPassword([]byte(p), userPassCost)
-	return string(b), err
+	return b, err
 }
 
-func userCorrectPass(pass string, storedhash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(storedhash), []byte(pass))
+func userCorrectPass(pass string, storedhash []byte) bool {
+	err := bcrypt.CompareHashAndPassword(storedhash, []byte(pass))
 	return err == nil
 }

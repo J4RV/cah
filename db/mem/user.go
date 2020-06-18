@@ -21,7 +21,7 @@ func GetUserStore(ds cah.DataStore) cah.UserStore {
 	return userStore
 }
 
-func (store *userMemStore) Create(username, password string) (cah.User, error) {
+func (store *userMemStore) Create(username string, password []byte) (cah.User, error) {
 	store.Lock()
 	defer store.Unlock()
 	user := cah.User{}

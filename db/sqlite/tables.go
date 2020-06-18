@@ -8,7 +8,7 @@ import (
 func createTableUser() {
 	createTable("user", []string{
 		"username TEXT UNIQUE",
-		"password TEXT",
+		"password VARBINARY(1024)",
 		"created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
 		"CHECK(username <> '' AND password <> '' AND LENGTH(username) <= 36)",
 	})

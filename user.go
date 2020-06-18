@@ -5,7 +5,7 @@ import (
 )
 
 type UserStore interface {
-	Create(username, password string) (User, error)
+	Create(username string, password []byte) (User, error)
 	ByName(name string) (User, error)
 	ByID(id int) (User, error)
 }
@@ -19,7 +19,7 @@ type UserUsecases interface {
 type User struct {
 	ID        int       `json:"id" db:"user"`
 	Username  string    `json:"username"`
-	Password  string    `json:"-"`
+	Password  []byte    `json:"-"`
 	CreatedAt time.Time `json:"-" db:"created_at"`
 	// Games played, games won, cards played...
 }

@@ -16,6 +16,6 @@ var users = []struct {
 // Passwords will be plaintext since Usecase is the one doing the hashing!
 func PopulateUsers(s cah.UserStore) {
 	for _, u := range users {
-		s.Create(u.name, u.pass)
+		s.Create(u.name, []byte(u.pass))
 	}
 }
