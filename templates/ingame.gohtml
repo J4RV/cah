@@ -1,0 +1,49 @@
+{{define "content"}}
+{{template "logged-header" .}}
+
+<div class="main">
+  <h4>{{.Game.Name}}</h4>
+
+</div>
+
+{{end}}
+
+{{define "script"}}
+<script>
+const MAX_RETRIES_ON_SOCKET_CLOSED = 4
+
+var app = new Vue({
+  el: '.main',
+  delimiters: VUE_DELIMITERS,
+  // data type: gameStateResponse
+  data: {
+    players: [],
+  }
+})
+
+const startWebsocket(retries) => {
+  const sock = new WebSocket("/api/gamestate/{{.Game.StateID}}/state-websocket")
+
+  sock.onmessage = (e) => {
+    //this.setState(JSON.parse(e.data))
+    console.log(e.data)
+    retries = MAX_RETRIES_ON_SOCKET_CLOSED
+  }
+
+  sock.onclose = () => {
+    retries--
+    if (retries <= 0) {
+      //this.props.pushError("Could not reconnect to server.")
+      return
+    }
+    console.error("Server Connection was lost, reconnecting...")
+    setTimeout(() => this.startWebsocket(retries), 2000 / retries)
+  }
+
+  sock.onerror = (err) => {
+    this.props.pushError("Server Connection error: " + err.message)
+    sock.close()
+  }
+}
+</script>
+{{end}}

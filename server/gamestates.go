@@ -100,16 +100,17 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 	eventListener := make(chan *cah.GameState)
 	startListening(gsID, &eventListener)
 	log.Println("User started listening:", u.Username, "game:", gsID)
-	defer stopListening(gsID, &eventListener)
-	defer log.Println("User stopped listening:", u.Username, "game:", gsID)
 
 	for {
 		err = conn.WriteJSON(newGameStateResponse(gameState, p))
 		if err != nil {
-			return
+			break
 		}
 		gameState = <-eventListener
 	}
+
+	stopListening(gsID, &eventListener)
+	log.Println("User stopped listening:", u.Username, "game:", gsID)
 }
 
 func gameStateForUser(w http.ResponseWriter, req *http.Request) error {

@@ -109,6 +109,7 @@ func setTemplateRouterHandlers(r *mux.Router) {
 	r.HandleFunc("/games", gamesPageHandler)
 	r.HandleFunc("/games/create", createGamePageHandler)
 	r.HandleFunc("/games/{gameID}", lobbyPageHandler)
+	r.HandleFunc("/games/{gameID}/ingame", ingamePageHandler)
 }
 
 // StartServer starts the server using the provided router

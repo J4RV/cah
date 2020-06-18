@@ -89,6 +89,32 @@ func lobbyPageHandler(w http.ResponseWriter, req *http.Request) {
 	})
 }
 
+type ingamePageCtx struct {
+	LoggedUser cah.User
+	Game       cah.Game
+	Flashes    []interface{}
+}
+
+func ingamePageHandler(w http.ResponseWriter, req *http.Request) {
+	user, err := userFromSession(w, req)
+	if err != nil {
+		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
+	}
+	game, err := gameFromRequest(req)
+	if err != nil {
+		addFlashMsg(gameDoesntExistMsg, gamesFlashKey, w, req)
+		http.Redirect(w, req, "/games", http.StatusFound)
+		return
+	}
+	execTemplate(ingamePageTmpl, w, lobbyPageCtx{
+		LoggedUser: user,
+		Game:       game,
+		Flashes:    getFlashes(gamesFlashKey, w, req),
+	})
+}
+
 /*
 OPEN GAMES LIST
 */
@@ -229,6 +255,7 @@ func startGame(w http.ResponseWriter, req *http.Request) error {
 		return err
 	}
 	log.Println("User", u.Username, "started the game:", g.Name)
+	http.Redirect(w, req, fmt.Sprintf("/games/%d/ingame", g.ID), http.StatusFound)
 	return nil
 }
 
