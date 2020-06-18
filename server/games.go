@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sort"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -260,7 +259,12 @@ func startGame(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	opts, err := optionsFromCreateRequest(expansions, handsize, maxrounds, randomfirstczar)
+	opts, err := optionsFromCreateRequest(
+		expansions,
+		handsize[0],
+		maxrounds[0],
+		len(randomfirstczar) > 0,
+	)
 	if err != nil {
 		return err
 	}
@@ -274,7 +278,7 @@ func startGame(w http.ResponseWriter, req *http.Request) error {
 	return nil
 }
 
-func optionsFromCreateRequest(expansions, handsize, maxrounds, randomfirstczar []string) ([]cah.Option, error) {
+func optionsFromCreateRequest(expansions []string, handsize, maxrounds string, randomfirstczar bool) ([]cah.Option, error) {
 	ret := []cah.Option{}
 
 	// EXPANSIONS
@@ -290,7 +294,7 @@ func optionsFromCreateRequest(expansions, handsize, maxrounds, randomfirstczar [
 	ret = append(ret, usecase.Game.Options().WhiteDeck(whites))
 
 	// HAND SIZE
-	handS, err := strconv.Atoi(handsize[0])
+	handS, err := strconv.Atoi(handsize)
 	if err != nil {
 		return ret, fmt.Errorf("Hand size must be an int")
 	}
@@ -300,30 +304,18 @@ func optionsFromCreateRequest(expansions, handsize, maxrounds, randomfirstczar [
 	ret = append(ret, usecase.Game.Options().HandSize(handS))
 
 	// RANDOM FIRST CZAR?
-	if len(randomfirstczar) > 0 {
+	if randomfirstczar {
 		ret = append(ret, usecase.Game.Options().RandomStartingCzar())
 	}
 
 	// MAX ROUNDS
-	maxRounds, err := strconv.Atoi(maxrounds[0])
+	maxRounds, err := strconv.Atoi(maxrounds)
 	if err != nil {
 		return ret, fmt.Errorf("Hand size must be an int")
 	}
 	ret = append(ret, usecase.Game.Options().MaxRounds(maxRounds))
 
 	return ret, nil
-}
-
-func availableExpansions(w http.ResponseWriter, req *http.Request) error {
-	// User is logged
-	_, err := userFromSession(w, req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-	}
-	exps := usecase.Card.AvailableExpansions()
-	sort.Strings(exps)
-	writeResponse(w, exps)
-	return nil
 }
 
 // Utils

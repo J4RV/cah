@@ -47,7 +47,7 @@ func processLogin(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	log.Printf("User %s with id %d just logged in!", u.Username, u.ID)
-	if err := sessionStart(u, len(req.Form["rememberme"]) == 1, w, req); err != nil {
+	if err := startSession(u, len(req.Form["rememberme"]) == 1, w, req); err != nil {
 		return
 	}
 	// everything ok, back to index with your brand new session!
@@ -69,7 +69,7 @@ func processRegister(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	log.Printf("User %s with id %d just registered!", u.Username, u.ID)
-	if err := sessionStart(u, len(req.Form["rememberme"]) == 1, w, req); err != nil {
+	if err := startSession(u, len(req.Form["rememberme"]) == 1, w, req); err != nil {
 		return
 	}
 	// everything ok, back to index with your brand new session!
@@ -88,7 +88,7 @@ func processLogout(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, "/", http.StatusFound)
 }
 
-func sessionStart(u cah.User, rememberme bool, w http.ResponseWriter, req *http.Request) error {
+func startSession(u cah.User, rememberme bool, w http.ResponseWriter, req *http.Request) error {
 	session := getSession(w, req)
 	session.Values["user_id"] = u.ID
 	if rememberme {
@@ -102,22 +102,13 @@ func sessionStart(u cah.User, rememberme bool, w http.ResponseWriter, req *http.
 	return nil
 }
 
-func validCookie(w http.ResponseWriter, req *http.Request) {
-	u, err := userFromSession(w, req)
-	if err != nil {
-		http.Error(w, "you dont own a valid cookie", http.StatusUnauthorized)
-		return
-	}
-	writeResponse(w, u)
-}
-
 /*
 	SESSIONS STUFF
 */
 
 var cookies *sessions.CookieStore
 
-func init() {
+func initCookieStore() {
 	if devMode {
 		cookies = sessions.NewCookieStore([]byte("dev-mode"))
 		return

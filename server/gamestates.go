@@ -113,23 +113,6 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 	log.Println("User stopped listening:", u.Username, "game:", gsID)
 }
 
-func gameStateForUser(w http.ResponseWriter, req *http.Request) error {
-	u, err := userFromSession(w, req)
-	if err != nil {
-		return err
-	}
-	gameState, err := gameStateFromRequest(req)
-	if err != nil {
-		return err
-	}
-	p, err := player(gameState, u)
-	if err != nil {
-		return err
-	}
-	writeResponse(w, newGameStateResponse(gameState, p))
-	return nil
-}
-
 func newGameStateResponse(gs *cah.GameState, player *cah.Player) *gameStateResponse {
 	return &gameStateResponse{
 		ID:              gs.ID,

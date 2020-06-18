@@ -27,8 +27,9 @@ var upgrader = websocket.Upgrader{
 }
 
 func init() {
-	initCertificateStuff()
 	parseFlags()
+	initCertificateStuff()
+	initCookieStore()
 }
 
 func initCertificateStuff() {
@@ -56,7 +57,7 @@ func Start(uc cah.Usecases) {
 	usecase = uc
 
 	router := mux.NewRouter()
-	//Any non found paths should redirect to index. React-router will handle those.
+
 	router.NotFoundHandler = http.HandlerFunc(simpleTmplHandler(notFoundPageTmpl))
 
 	setRestRouterHandlers(router)
@@ -80,23 +81,20 @@ func setRestRouterHandlers(r *mux.Router) {
 		s.HandleFunc("/login", processLogin).Methods("POST")
 		s.HandleFunc("/register", processRegister).Methods("POST")
 		s.HandleFunc("/logout", processLogout).Methods("POST", "GET")
-		s.HandleFunc("/valid-cookie", validCookie).Methods("GET")
 	}
 
 	{
 		s := restRouter.PathPrefix("/game").Subrouter()
-		s.Handle("/{gameID}/lobby-state", srvHandler(lobbyState)).Methods("GET")
 		s.Handle("/create", srvHandler(createGame)).Methods("POST")
+		s.Handle("/{gameID}/lobby-state", srvHandler(lobbyState)).Methods("GET")
 		s.Handle("/{gameID}/join", srvHandler(joinGame)).Methods("POST")
 		s.Handle("/{gameID}/leave", srvHandler(leaveGame)).Methods("POST")
 		s.Handle("/{gameID}/start", srvHandler(startGame)).Methods("POST")
-		s.Handle("/available-expansions", srvHandler(availableExpansions)).Methods("GET")
 	}
 
 	{
 		s := restRouter.PathPrefix("/gamestate/{gameStateID}").Subrouter()
 		s.HandleFunc("/state-websocket", gameStateWebsocket).Methods("GET")
-		s.Handle("/state", srvHandler(gameStateForUser)).Methods("GET")
 		s.Handle("/choose-winner", srvHandler(chooseWinner)).Methods("POST")
 		s.Handle("/play-cards", srvHandler(playCards)).Methods("POST")
 	}
