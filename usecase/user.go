@@ -13,7 +13,7 @@ type userController struct {
 	store cah.UserStore
 }
 
-func NewUserUsecase(store cah.UserStore) *userController {
+func NewUserUsecase(uc cah.Usecases, store cah.UserStore) *userController {
 	return &userController{store: store}
 }
 

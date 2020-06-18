@@ -36,10 +36,20 @@ func gamesPageHandler(w http.ResponseWriter, req *http.Request) {
 		http.Redirect(w, req, "/login", http.StatusFound)
 		return
 	}
+	inProgress, err := usecase.Game.InProgressForUser(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	openGames, err := usecase.Game.AllOpen()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	execTemplate(gamesPageTmpl, w, gamesPageCtx{
 		LoggedUser:      user,
-		InProgressGames: usecase.Game.InProgressForUser(user),
-		OpenGames:       usecase.Game.AllOpen(),
+		InProgressGames: inProgress,
+		OpenGames:       openGames,
 	})
 }
 
@@ -143,14 +153,19 @@ func gameToResponse(g cah.Game) gameRoomResponse {
 	for i := range g.Users {
 		players[i] = g.Users[i].Username
 	}
+	state, err := usecase.GameState.ByID(g.StateID)
+	phase := ""
+	if err == nil {
+		phase = state.Phase.String()
+	}
 	return gameRoomResponse{
 		ID:          g.ID,
 		Owner:       g.Owner.Username,
 		Name:        g.Name,
 		HasPassword: g.Password != "",
 		Players:     players,
-		Phase:       g.State.Phase.String(),
-		StateID:     g.State.ID,
+		Phase:       phase,
+		StateID:     g.StateID,
 	}
 }
 

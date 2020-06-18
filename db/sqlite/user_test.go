@@ -9,7 +9,7 @@ import (
 func userTestSetup(t *testing.T) (*userStore, func()) {
 	InitDB(":memory:")
 	CreateTables()
-	return NewUserStore(), func() {
+	return NewUserStore(cah.DataStore{}), func() {
 		db.Close()
 	}
 }

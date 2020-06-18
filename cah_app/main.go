@@ -27,16 +27,19 @@ func main() {
 func run() {
 	printRunningDir()
 	sqlite.InitDB("db/database.sqlite3")
-	stateStore := mem.GetGameStateStore()
-	gameStore := mem.GetGameStore()
-	cardStore := mem.GetCardStore()
-	userStore := sqlite.NewUserStore()
-	usecases := cah.Usecases{
-		GameState: usecase.NewGameStateUsecase(stateStore),
-		Card:      usecase.NewCardUsecase(cardStore),
-		User:      usecase.NewUserUsecase(userStore),
-		Game:      usecase.NewGameUsecase(gameStore),
-	}
+
+	dataStore := cah.DataStore{}
+	dataStore.GameState = mem.GetGameStateStore(dataStore)
+	dataStore.Game = mem.GetGameStore(dataStore)
+	dataStore.Card = mem.GetCardStore(dataStore)
+	dataStore.User = sqlite.NewUserStore(dataStore)
+
+	usecases := cah.Usecases{}
+	usecases.GameState = usecase.NewGameStateUsecase(usecases, dataStore.GameState)
+	usecases.Game = usecase.NewGameUsecase(usecases, dataStore.Game)
+	usecases.Card = usecase.NewCardUsecase(usecases, dataStore.Card)
+	usecases.User = usecase.NewUserUsecase(usecases, dataStore.User)
+
 	populateCards(usecases.Card)
 
 	fixture.PopulateUsers(usecases.User)
@@ -60,6 +63,7 @@ func createTestGames(usecase cah.Usecases) {
 	usecase.Game.Create(users[1], "A long and descriptive game name", "")
 	usecase.Game.Create(users[0], "Amo a juga", "1234")
 	usecase.Game.Create(users[0], "Almost finished", "")
+
 	// Start the Amo a juga game
 	g, _ := usecase.Game.ByID(2)
 	usecase.Game.UserJoins(users[1], g)
@@ -73,7 +77,11 @@ func createTestGames(usecase cah.Usecases) {
 		usecase.Game.Options().BlackDeck(bd),
 		usecase.Game.Options().WhiteDeck(wd),
 	)
-	// Start the 	usecase.Game.Create(users[2], "Finished", "")
+	if err != nil {
+		panic(err)
+	}
+
+	// Start the "Almost finished"
 	g, _ = usecase.Game.ByID(3)
 	usecase.Game.UserJoins(users[1], g)
 	g, _ = usecase.Game.ByID(3)
@@ -87,15 +95,25 @@ func createTestGames(usecase cah.Usecases) {
 		usecase.Game.Options().WhiteDeck(wd),
 		usecase.Game.Options().MaxRounds(1),
 	)
+	if err != nil {
+		panic(err)
+	}
 	g, _ = usecase.Game.ByID(3)
 	if err != nil {
 		panic(err)
 	}
-	for i := range g.State.Players {
-		if g.State.CurrCzarIndex == i {
+	s, err := usecase.GameState.ByID(g.StateID)
+	if err != nil {
+		panic(err)
+	}
+	for i := range s.Players {
+		if s.CurrCzarIndex == i {
 			continue
 		}
-		usecase.GameState.PlayRandomWhiteCards(i, g.State)
+		err := usecase.GameState.PlayRandomWhiteCards(i, s)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

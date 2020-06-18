@@ -1,9 +1,14 @@
 package mem
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/j4rv/cah"
+)
 
 type abstractMemStore struct {
-	lastID int
+	lastID    int
+	dataStore cah.DataStore
 	sync.Mutex
 }
 

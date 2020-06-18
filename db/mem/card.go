@@ -21,7 +21,7 @@ var cardStore = &cardMemStore{
 }
 
 // GetCardStore returns the global card store
-func GetCardStore() cah.CardStore {
+func GetCardStore(ds cah.DataStore) cah.CardStore {
 	return cardStore
 }
 

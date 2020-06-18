@@ -17,7 +17,8 @@ var gameStore = &gameMemStore{
 }
 
 // GetGameStore returns the global game store
-func GetGameStore() cah.GameStore {
+func GetGameStore(ds cah.DataStore) cah.GameStore {
+	gameStore.dataStore = ds
 	return gameStore
 }
 
@@ -42,19 +43,27 @@ func (store *gameMemStore) ByID(id int) (cah.Game, error) {
 	return g, nil
 }
 
-func (store *gameMemStore) ByStatePhase(phases ...cah.Phase) []cah.Game {
+func (store *gameMemStore) ByGameStateID(id int) (cah.Game, error) {
+	store.Lock()
+	defer store.Unlock()
+	for _, g := range store.games {
+		if g.StateID == id {
+			return g, nil
+		}
+	}
+	return cah.Game{}, fmt.Errorf("No game found with game state id %d", id)
+}
+
+func (store *gameMemStore) ByPhase(started, finished bool) ([]cah.Game, error) {
 	store.Lock()
 	defer store.Unlock()
 	ret := []cah.Game{}
 	for _, g := range store.games {
-		for _, p := range phases {
-			if g.State != nil && g.State.Phase == p {
-				ret = append(ret, g)
-				break
-			}
+		if g.Started == started && g.Finished == finished {
+			ret = append(ret, g)
 		}
 	}
-	return ret
+	return ret, nil
 }
 
 func (store *gameMemStore) Update(g cah.Game) error {

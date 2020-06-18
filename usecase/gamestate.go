@@ -19,11 +19,12 @@ func (e errorEmptyBlackDeck) Error() string {
 }
 
 type stateController struct {
-	store cah.GameStateStore
+	store   cah.GameStateStore
+	usecase cah.Usecases
 }
 
-func NewGameStateUsecase(store cah.GameStateStore) *stateController {
-	return &stateController{store: store}
+func NewGameStateUsecase(uc cah.Usecases, store cah.GameStateStore) *stateController {
+	return &stateController{store: store, usecase: uc}
 }
 
 func (control stateController) Create() *cah.GameState {
@@ -46,12 +47,21 @@ func (control stateController) ByID(id int) (*cah.GameState, error) {
 	return control.store.ByID(id)
 }
 
-func (control stateController) End(g *cah.GameState) error {
-	if g.Phase == cah.Finished {
+func (control stateController) End(gs *cah.GameState) error {
+	if gs.Phase == cah.Finished {
 		return errors.New("Tried to end a game but it has already finished")
 	}
-	g.Phase = cah.Finished
-	err := control.store.Update(g)
+	gs.Phase = cah.Finished
+	err := control.store.Update(gs)
+	if err != nil {
+		return err
+	}
+	g, err := control.usecase.Game.ByGameStateID(gs.ID)
+	if err != nil {
+		return err
+	}
+	g.Finished = true
+	err = control.usecase.Game.Update(g)
 	if err != nil {
 		return err
 	}

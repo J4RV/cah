@@ -16,7 +16,7 @@ var stateStore = &stateMemStore{
 }
 
 // GetGameStateStore returns the global game state store
-func GetGameStateStore() cah.GameStateStore {
+func GetGameStateStore(ds cah.DataStore) cah.GameStateStore {
 	return stateStore
 }
 

@@ -6,7 +6,7 @@ import (
 
 type userStore struct{}
 
-func NewUserStore() *userStore {
+func NewUserStore(ds cah.DataStore) *userStore {
 	return &userStore{}
 }
 

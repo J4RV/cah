@@ -14,7 +14,7 @@ type gameController struct {
 	options Options
 }
 
-func NewGameUsecase(store cah.GameStore) *gameController {
+func NewGameUsecase(uc cah.Usecases, store cah.GameStore) *gameController {
 	return &gameController{
 		store: store,
 	}
@@ -30,7 +30,6 @@ func (control gameController) Create(owner cah.User, name, pass string) (cah.Gam
 		UserID: owner.ID,
 		Name:   trimmed,
 		Users:  []cah.User{owner},
-		State:  &cah.GameState{},
 	}
 	trimmedPass := strings.TrimSpace(pass)
 	if trimmedPass != "" {
@@ -43,12 +42,19 @@ func (control gameController) ByID(id int) (cah.Game, error) {
 	return control.store.ByID(id)
 }
 
-func (control gameController) AllOpen() []cah.Game {
-	return control.store.ByStatePhase(cah.NotStarted)
+func (control gameController) ByGameStateID(id int) (cah.Game, error) {
+	return control.store.ByGameStateID(id)
 }
 
-func (control gameController) InProgressForUser(user cah.User) []cah.Game {
-	gamesInProgress := control.store.ByStatePhase(cah.SinnersPlaying, cah.CzarChoosingWinner)
+func (control gameController) AllOpen() ([]cah.Game, error) {
+	return control.store.ByPhase(false, false)
+}
+
+func (control gameController) InProgressForUser(user cah.User) ([]cah.Game, error) {
+	gamesInProgress, err := control.store.ByPhase(true, false)
+	if err != nil {
+		return gamesInProgress, err
+	}
 	ret := []cah.Game{}
 	for _, ipg := range gamesInProgress {
 		for _, u := range ipg.Users {
@@ -58,7 +64,11 @@ func (control gameController) InProgressForUser(user cah.User) []cah.Game {
 			}
 		}
 	}
-	return ret
+	return ret, err
+}
+
+func (control gameController) Update(g cah.Game) error {
+	return control.store.Update(g)
 }
 
 func (control gameController) UserJoins(user cah.User, game cah.Game) error {
@@ -87,11 +97,8 @@ func (control gameController) Start(g cah.Game, state *cah.GameState, opts ...ca
 	if len(g.Users) < 3 {
 		return fmt.Errorf("The minimum amount of players to start a game is 3, got: %d", len(g.Users))
 	}
-	if g.State == nil {
-		return fmt.Errorf("Tried to start a game but it does not have any State")
-	}
-	if g.State.ID != 0 {
-		return fmt.Errorf("Tried to start a game but it already has a state. State ID '%d'", g.State.ID)
+	if g.Started {
+		return fmt.Errorf("Tried to start a game but it already started")
 	}
 	players := make([]*cah.Player, len(g.Users))
 	for i, u := range g.Users {
@@ -99,12 +106,13 @@ func (control gameController) Start(g cah.Game, state *cah.GameState, opts ...ca
 	}
 	state.Players = players
 	applyOptions(state, opts...)
-	g.State = state
+	g.StateID = state.ID
 	err := putBlackCardInPlay(state)
 	if err != nil {
 		return err
 	}
 	playersDraw(state)
+	g.Started = true
 	err = control.store.Update(g)
 	if err != nil {
 		return err

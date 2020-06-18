@@ -3,20 +3,22 @@ package cah
 type GameStore interface {
 	Create(Game) (Game, error)
 	ByID(int) (Game, error)
-	ByStatePhase(...Phase) []Game
+	ByGameStateID(int) (Game, error)
 	Update(Game) error
+	ByPhase(started, finished bool) ([]Game, error)
 }
 
 type GameUsecases interface {
 	Create(owner User, name, pass string) (Game, error)
 	ByID(int) (Game, error)
-	AllOpen() []Game
-	InProgressForUser(User) []Game
+	ByGameStateID(int) (Game, error)
+	AllOpen() ([]Game, error)
+	InProgressForUser(User) ([]Game, error)
+	Update(Game) error
 	UserJoins(User, Game) error
 	UserLeaves(User, Game) error
 	Start(Game, *GameState, ...Option) error
 	Options() GameOptions
-	//Start(gameID int, options ...Option) error
 }
 
 type Game struct {
@@ -26,8 +28,9 @@ type Game struct {
 	Users    []User `gorm:"many2many:game_users;"`
 	Name     string
 	Password string
-	State    *GameState
 	StateID  int
+	Started  bool
+	Finished bool
 }
 
 type GameOptions interface {

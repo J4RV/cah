@@ -17,7 +17,7 @@ var userStore = &userMemStore{
 }
 
 // GetUserStore returns the global user store
-func GetUserStore() cah.UserStore {
+func GetUserStore(ds cah.DataStore) cah.UserStore {
 	return userStore
 }
 
