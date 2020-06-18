@@ -23,7 +23,8 @@ type stateController struct {
 	usecase cah.Usecases
 }
 
-func NewGameStateUsecase(uc cah.Usecases, store cah.GameStateStore) *stateController {
+// NewGameStateUsecase returns a cah.GameStateUsecases
+func NewGameStateUsecase(uc cah.Usecases, store cah.GameStateStore) cah.GameStateUsecases {
 	return &stateController{store: store, usecase: uc}
 }
 
@@ -124,7 +125,7 @@ func giveBlackCardToWinnerChecks(w int, s *cah.GameState) error {
 
 // PlayWhiteCards checks that the player is able to play those cards in the current gamestate, then calls playWhiteCards
 func (control stateController) PlayWhiteCards(p int, cs []int, g *cah.GameState) error {
-	if checkErr := PlayWhiteCardsChecks(p, g); checkErr != nil {
+	if checkErr := playWhiteCardsChecks(p, g); checkErr != nil {
 		return checkErr
 	}
 	if len(cs) != g.BlackCardInPlay.Blanks {
@@ -153,7 +154,7 @@ func (control stateController) playWhiteCards(p int, cs []int, gs *cah.GameState
 }
 
 func (control stateController) PlayRandomWhiteCards(p int, g *cah.GameState) error {
-	if checkErr := PlayWhiteCardsChecks(p, g); checkErr != nil {
+	if checkErr := playWhiteCardsChecks(p, g); checkErr != nil {
 		return checkErr
 	}
 	cardIndexes := rng.RandomDifferentInts(g.BlackCardInPlay.Blanks, 0, len(g.Players[p].Hand))
@@ -161,7 +162,7 @@ func (control stateController) PlayRandomWhiteCards(p int, g *cah.GameState) err
 	return control.playWhiteCards(p, cardIndexes, g)
 }
 
-func (_ stateController) AllSinnersPlayedTheirCards(s *cah.GameState) bool {
+func (stateController) AllSinnersPlayedTheirCards(s *cah.GameState) bool {
 	for i, p := range s.Players {
 		if i == s.CurrCzarIndex {
 			continue
@@ -205,7 +206,7 @@ func putBlackCardInPlayChecks(g *cah.GameState) error {
 	return nil
 }
 
-func (_ stateController) nextCzar(gs *cah.GameState) error {
+func (stateController) nextCzar(gs *cah.GameState) error {
 	if gs.BlackCardInPlay != nilBlackCard {
 		return errors.New("Tried to rotate to the next Czar but there is still a black card in play")
 	}
@@ -219,7 +220,7 @@ func (_ stateController) nextCzar(gs *cah.GameState) error {
 	return nil
 }
 
-func PlayWhiteCardsChecks(p int, g *cah.GameState) error {
+func playWhiteCardsChecks(p int, g *cah.GameState) error {
 	if p < 0 || p >= len(g.Players) {
 		return errors.New("Non valid sinner index")
 	}

@@ -13,27 +13,28 @@ type userController struct {
 	store cah.UserStore
 }
 
-func NewUserUsecase(uc cah.Usecases, store cah.UserStore) *userController {
+// NewUserUsecase returns a cah.UserUsecases
+func NewUserUsecase(uc cah.Usecases, store cah.UserStore) cah.UserUsecases {
 	return &userController{store: store}
 }
 
 func (uc userController) Register(name, pass string) (cah.User, error) {
 	trimmedName := strings.TrimSpace(name)
 	if trimmedName == "" {
-		return cah.User{}, errors.New("Username cannot be empty.")
+		return cah.User{}, errors.New("Username cannot be empty")
 	}
 	if pass == "" {
-		return cah.User{}, errors.New("Password cannot be empty.")
+		return cah.User{}, errors.New("Password cannot be empty")
 	}
 	_, err := uc.store.ByName(name)
 	if err == nil {
-		return cah.User{}, errors.New("That username already exists. Please try another.")
+		return cah.User{}, errors.New("That username already exists. Please try another")
 	}
 	passHash, err := userPassHash(pass)
 	if err != nil {
 		//Never log passwords! But this one caused an error and will not be stored, its an ok exception
 		log.Println("ERROR while trying to hash password.", pass, err)
-		return cah.User{}, errors.New("That password could not be protected correctly. Please try another.")
+		return cah.User{}, errors.New("That password could not be protected correctly. Please try another")
 	}
 	return uc.store.Create(name, passHash)
 }

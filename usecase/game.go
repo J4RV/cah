@@ -14,7 +14,8 @@ type gameController struct {
 	options Options
 }
 
-func NewGameUsecase(uc cah.Usecases, store cah.GameStore) *gameController {
+// NewGameUsecase returns a cah.GameUsecases
+func NewGameUsecase(uc cah.Usecases, store cah.GameStore) cah.GameUsecases {
 	return &gameController{
 		store: store,
 	}

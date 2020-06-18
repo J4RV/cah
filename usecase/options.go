@@ -7,6 +7,7 @@ import (
 	"github.com/j4rv/cah"
 )
 
+// Options contains methods to alter a gamestate
 type Options struct {
 	cards cah.CardUsecases
 }
@@ -17,27 +18,31 @@ func applyOptions(s *cah.GameState, opts ...cah.Option) {
 	}
 }
 
-func (_ Options) HandSize(size int) cah.Option {
+// HandSize changes the gamestate's hand size
+func (Options) HandSize(size int) cah.Option {
 	return func(s *cah.GameState) {
 		s.HandSize = size
 	}
 }
 
-func (_ Options) WhiteDeck(wd []*cah.WhiteCard) cah.Option {
+// WhiteDeck changes the gamestate's white deck
+func (Options) WhiteDeck(wd []*cah.WhiteCard) cah.Option {
 	return func(s *cah.GameState) {
 		s.WhiteDeck = wd
 		shuffleW(&s.WhiteDeck)
 	}
 }
 
-func (_ Options) BlackDeck(bd []*cah.BlackCard) cah.Option {
+// BlackDeck changes the gamestate's black deck
+func (Options) BlackDeck(bd []*cah.BlackCard) cah.Option {
 	return func(s *cah.GameState) {
 		s.BlackDeck = bd
 		shuffleB(&s.BlackDeck)
 	}
 }
 
-func (_ Options) RandomStartingCzar() cah.Option {
+// RandomStartingCzar set's the gamestate to start with a random czar
+func (Options) RandomStartingCzar() cah.Option {
 	return func(s *cah.GameState) {
 		if len(s.Players) == 0 {
 			log.Println("WARNING Tried to call RandomStartingCzar using a game without players")
@@ -47,7 +52,8 @@ func (_ Options) RandomStartingCzar() cah.Option {
 	}
 }
 
-func (_ Options) MaxRounds(max int) cah.Option {
+// MaxRounds changes the gamestate's max rounds
+func (Options) MaxRounds(max int) cah.Option {
 	return func(s *cah.GameState) {
 		s.MaxRounds = max
 	}
