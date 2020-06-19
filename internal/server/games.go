@@ -53,7 +53,7 @@ type createGamePageCtx struct {
 func createGamePageHandler(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	execTemplate(createGamePageTmpl, w, http.StatusOK, lobbyPageCtx{
 		LoggedUser: user,
-		Flashes:    getFlashes(gamesFlashKey, w, req),
+		Flashes:    getFlashes(w, req),
 	})
 	return nil
 }
@@ -70,7 +70,7 @@ func lobbyPageHandler(game cah.Game, user cah.User, w http.ResponseWriter, req *
 		LoggedUser:          user,
 		Game:                game,
 		AvailableExpansions: usecase.Card.AvailableExpansions(),
-		Flashes:             getFlashes(gamesFlashKey, w, req),
+		Flashes:             getFlashes(w, req),
 	})
 	return nil
 }
@@ -85,7 +85,7 @@ func ingamePageHandler(game cah.Game, user cah.User, w http.ResponseWriter, req 
 	execTemplate(ingamePageTmpl, w, http.StatusOK, lobbyPageCtx{
 		LoggedUser: user,
 		Game:       game,
-		Flashes:    getFlashes(gamesFlashKey, w, req),
+		Flashes:    getFlashes(w, req),
 	})
 	return nil
 }
@@ -105,7 +105,7 @@ type gameRoomResponse struct {
 }
 
 func lobbyState(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
-	writeResponse(w, gameToResponse(game))
+	writeJSONResponse(w, gameToResponse(game))
 	return nil
 }
 

@@ -50,7 +50,7 @@ func execTemplate(id tmplID, w http.ResponseWriter, status int, data interface{}
 	w.WriteHeader(status)
 	err := compiledTemplates[id].Execute(w, data)
 	if err != nil {
-		log.Println("Error while executing template", id, err)
+		logError.Println("trying to executing template", id, err)
 	}
 
 	if devMode {

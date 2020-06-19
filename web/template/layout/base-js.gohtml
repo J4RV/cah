@@ -9,6 +9,10 @@ function randomRotateCards(){
   })
 }
 
+function relativeWebSocketUrl(url) {
+  return (document.location.protocol === "http:" ? "ws:" : "wss:") + window.location.host + url
+}
+
 // "Button checkboxes"
 
 function initCheckboxLabels() {

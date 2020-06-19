@@ -13,7 +13,7 @@ const missingRequiredParamsMsg = "Missing required parameters"
 
 var errMissingRequiredParam = errors.New("missing required param")
 
-func writeResponse(w http.ResponseWriter, obj interface{}) {
+func writeJSONResponse(w http.ResponseWriter, obj interface{}) {
 	j, err := json.Marshal(obj)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

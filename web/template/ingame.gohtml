@@ -21,13 +21,14 @@ var app = new Vue({
   }
 })
 
-const startWebsocket(retries) => {
-  const sock = new WebSocket("/api/gamestate/{{.Game.StateID}}/state-websocket")
+const startWebsocket = (retries) => {
+  const sock = new WebSocket(relativeWebSocketUrl("/api/game/{{.Game.ID}}/state/websocket"))
 
   sock.onmessage = (e) => {
-    //this.setState(JSON.parse(e.data))
-    console.log(e.data)
     retries = MAX_RETRIES_ON_SOCKET_CLOSED
+    let data = JSON.parse(e.data)
+    console.log(data)
+    app.players = data.players
   }
 
   sock.onclose = () => {
@@ -37,13 +38,15 @@ const startWebsocket(retries) => {
       return
     }
     console.error("Server Connection was lost, reconnecting...")
-    setTimeout(() => this.startWebsocket(retries), 2000 / retries)
+    setTimeout(() => startWebsocket(retries), 2000 / retries)
   }
 
   sock.onerror = (err) => {
-    this.props.pushError("Server Connection error: " + err.message)
+    //this.props.pushError("Server Connection error: " + err.message)
     sock.close()
   }
 }
+
+startWebsocket(MAX_RETRIES_ON_SOCKET_CLOSED)
 </script>
 {{end}}
