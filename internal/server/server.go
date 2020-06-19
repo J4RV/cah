@@ -85,11 +85,11 @@ func setRestRouterHandlers(r *mux.Router) {
 
 	{
 		s := restRouter.PathPrefix("/game").Subrouter()
-		s.Handle("/create", srvHandler(createGame)).Methods("POST")
-		s.Handle("/{gameID}/lobby-state", srvHandler(lobbyState)).Methods("GET")
-		s.Handle("/{gameID}/join", srvHandler(joinGame)).Methods("POST")
-		s.Handle("/{gameID}/leave", srvHandler(leaveGame)).Methods("POST")
-		s.Handle("/{gameID}/start", srvHandler(startGame)).Methods("POST")
+		s.Handle("/create", loggedInHandler(createGame)).Methods("POST")
+		s.Handle("/{gameID}/lobby-state", loggedInHandler(lobbyState)).Methods("GET")
+		s.Handle("/{gameID}/join", loggedInHandler(joinGame)).Methods("POST")
+		s.Handle("/{gameID}/leave", loggedInHandler(leaveGame)).Methods("POST")
+		s.Handle("/{gameID}/start", loggedInHandler(startGame)).Methods("POST")
 	}
 
 	{
@@ -104,10 +104,10 @@ func setRestRouterHandlers(r *mux.Router) {
 func setTemplateRouterHandlers(r *mux.Router) {
 	r.HandleFunc("/", loginPageHandler)
 	r.HandleFunc("/login", loginPageHandler)
-	r.HandleFunc("/games", gamesPageHandler)
-	r.HandleFunc("/games/create", createGamePageHandler)
-	r.HandleFunc("/games/{gameID}", lobbyPageHandler)
-	r.HandleFunc("/games/{gameID}/ingame", ingamePageHandler)
+	r.Handle("/games", loggedInHandler(gamesPageHandler))
+	r.Handle("/games/create", loggedInHandler(createGamePageHandler))
+	r.Handle("/games/{gameID}", loggedInHandler(lobbyPageHandler))
+	r.Handle("/games/{gameID}/ingame", loggedInHandler(ingamePageHandler))
 }
 
 // StartServer starts the server using the provided router
@@ -140,4 +140,18 @@ func (fn srvHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Printf("ServeHTTP error: %s", err)
 		http.Error(w, err.Error(), http.StatusPreconditionFailed)
 	}
+}
+
+type loggedInHandler func(cah.User, http.ResponseWriter, *http.Request) error
+
+func (fn loggedInHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	user, err := userFromSession(w, req)
+	if err != nil {
+		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
+	}
+	srvHandler(func(w http.ResponseWriter, req *http.Request) error {
+		return fn(user, w, req)
+	})(w, req)
 }

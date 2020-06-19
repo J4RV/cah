@@ -7,8 +7,8 @@ type CardStore interface {
 	CreateBlack(text, expansion string, blanks int) error
 	AllWhites() ([]*WhiteCard, error)
 	AllBlacks() ([]*BlackCard, error)
-	ExpansionWhites(...string) ([]*WhiteCard, error)
-	ExpansionBlacks(...string) ([]*BlackCard, error)
+	WhitesByExpansion(...string) ([]*WhiteCard, error)
+	BlacksByExpansion(...string) ([]*BlackCard, error)
 	AvailableExpansions() ([]string, error)
 }
 
@@ -17,8 +17,8 @@ type CardUsecases interface {
 	CreateFromFolder(folderPath, expansionName string) error
 	AllWhites() []*WhiteCard
 	AllBlacks() []*BlackCard
-	ExpansionWhites(...string) []*WhiteCard
-	ExpansionBlacks(...string) []*BlackCard
+	WhitesByExpansion(...string) []*WhiteCard
+	BlacksByExpansion(...string) []*BlackCard
 	AvailableExpansions() []string
 }
 

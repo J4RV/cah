@@ -96,7 +96,7 @@ func (store *cardMemStore) AllBlacks() ([]*cah.BlackCard, error) {
 	return ret, nil
 }
 
-func (store *cardMemStore) ExpansionWhites(exps ...string) ([]*cah.WhiteCard, error) {
+func (store *cardMemStore) WhitesByExpansion(exps ...string) ([]*cah.WhiteCard, error) {
 	store.Lock()
 	defer store.Unlock()
 	ret := []*cah.WhiteCard{}
@@ -111,7 +111,7 @@ func (store *cardMemStore) ExpansionWhites(exps ...string) ([]*cah.WhiteCard, er
 	return ret, nil
 }
 
-func (store *cardMemStore) ExpansionBlacks(exps ...string) ([]*cah.BlackCard, error) {
+func (store *cardMemStore) BlacksByExpansion(exps ...string) ([]*cah.BlackCard, error) {
 	store.Lock()
 	defer store.Unlock()
 	ret := []*cah.BlackCard{}

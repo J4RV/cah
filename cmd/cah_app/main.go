@@ -72,8 +72,8 @@ func createTestGames(usecase cah.Usecases) {
 	g, _ = usecase.Game.ByID(2)
 	usecase.Game.UserJoins(users[2], g)
 	g, _ = usecase.Game.ByID(2)
-	wd := usecase.Card.ExpansionWhites("Base UK")
-	bd := usecase.Card.ExpansionBlacks("Base UK")
+	wd := usecase.Card.WhitesByExpansion("Base UK")
+	bd := usecase.Card.BlacksByExpansion("Base UK")
 	state := usecase.GameState.Create()
 	err := usecase.Game.Start(g, state,
 		usecase.Game.Options().BlackDeck(bd),
@@ -89,8 +89,8 @@ func createTestGames(usecase cah.Usecases) {
 	g, _ = usecase.Game.ByID(3)
 	usecase.Game.UserJoins(users[2], g)
 	g, _ = usecase.Game.ByID(3)
-	wd = usecase.Card.ExpansionWhites("Base UK")
-	bd = usecase.Card.ExpansionBlacks("Base UK")
+	wd = usecase.Card.WhitesByExpansion("Base UK")
+	bd = usecase.Card.BlacksByExpansion("Base UK")
 	state = usecase.GameState.Create()
 	err = usecase.Game.Start(g, state,
 		usecase.Game.Options().BlackDeck(bd),

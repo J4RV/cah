@@ -28,28 +28,21 @@ type gamesPageCtx struct {
 	OpenGames       []cah.Game
 }
 
-func gamesPageHandler(w http.ResponseWriter, req *http.Request) {
-	user, err := userFromSession(w, req)
-	if err != nil {
-		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
-		http.Redirect(w, req, "/login", http.StatusFound)
-		return
-	}
+func gamesPageHandler(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	inProgress, err := usecase.Game.InProgressForUser(user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 	openGames, err := usecase.Game.AllOpen()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 	execTemplate(gamesPageTmpl, w, gamesPageCtx{
 		LoggedUser:      user,
 		InProgressGames: inProgress,
 		OpenGames:       openGames,
 	})
+	return nil
 }
 
 type createGamePageCtx struct {
@@ -57,17 +50,12 @@ type createGamePageCtx struct {
 	Flashes    []interface{}
 }
 
-func createGamePageHandler(w http.ResponseWriter, req *http.Request) {
-	user, err := userFromSession(w, req)
-	if err != nil {
-		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
-		http.Redirect(w, req, "/login", http.StatusFound)
-		return
-	}
+func createGamePageHandler(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	execTemplate(createGamePageTmpl, w, lobbyPageCtx{
 		LoggedUser: user,
 		Flashes:    getFlashes(gamesFlashKey, w, req),
 	})
+	return nil
 }
 
 type lobbyPageCtx struct {
@@ -77,18 +65,11 @@ type lobbyPageCtx struct {
 	Flashes             []interface{}
 }
 
-func lobbyPageHandler(w http.ResponseWriter, req *http.Request) {
-	user, err := userFromSession(w, req)
-	if err != nil {
-		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
-		http.Redirect(w, req, "/login", http.StatusFound)
-		return
-	}
+func lobbyPageHandler(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	game, err := gameFromRequest(req)
 	if err != nil {
 		addFlashMsg(gameDoesntExistMsg, gamesFlashKey, w, req)
-		http.Redirect(w, req, "/games", http.StatusFound)
-		return
+		return err
 	}
 	execTemplate(lobbyPageTmpl, w, lobbyPageCtx{
 		LoggedUser:          user,
@@ -96,6 +77,7 @@ func lobbyPageHandler(w http.ResponseWriter, req *http.Request) {
 		AvailableExpansions: usecase.Card.AvailableExpansions(),
 		Flashes:             getFlashes(gamesFlashKey, w, req),
 	})
+	return nil
 }
 
 type ingamePageCtx struct {
@@ -104,24 +86,18 @@ type ingamePageCtx struct {
 	Flashes    []interface{}
 }
 
-func ingamePageHandler(w http.ResponseWriter, req *http.Request) {
-	user, err := userFromSession(w, req)
-	if err != nil {
-		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
-		http.Redirect(w, req, "/login", http.StatusFound)
-		return
-	}
+func ingamePageHandler(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	game, err := gameFromRequest(req)
 	if err != nil {
 		addFlashMsg(gameDoesntExistMsg, gamesFlashKey, w, req)
-		http.Redirect(w, req, "/games", http.StatusFound)
-		return
+		return err
 	}
 	execTemplate(ingamePageTmpl, w, lobbyPageCtx{
 		LoggedUser: user,
 		Game:       game,
 		Flashes:    getFlashes(gamesFlashKey, w, req),
 	})
+	return nil
 }
 
 /*
@@ -138,7 +114,7 @@ type gameRoomResponse struct {
 	StateID     int      `json:"stateID"`
 }
 
-func lobbyState(w http.ResponseWriter, req *http.Request) error {
+func lobbyState(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	g, err := gameFromRequest(req)
 	if err != nil {
 		return err
@@ -172,19 +148,14 @@ func gameToResponse(g cah.Game) gameRoomResponse {
 CREATE GAME
 */
 
-func createGame(w http.ResponseWriter, req *http.Request) error {
+func createGame(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	req.ParseForm()
 	name := req.Form["name"]
 	password := optionalSingleFormParam(req.Form["password"])
 	if err := requiredFormParams(name); err != nil {
 		return err
 	}
-	// User is logged
-	u, err := userFromSession(w, req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-	}
-	g, err := usecase.Game.Create(u, name[0], password)
+	g, err := usecase.Game.Create(user, name[0], password)
 	if err != nil {
 		return err
 	}
@@ -196,17 +167,12 @@ func createGame(w http.ResponseWriter, req *http.Request) error {
 JOIN AND LEAVE GAME
 */
 
-func joinGame(w http.ResponseWriter, req *http.Request) error {
-	// User is logged
-	u, err := userFromSession(w, req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-	}
+func joinGame(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	game, err := gameFromRequest(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	err = usecase.Game.UserJoins(u, game)
+	err = usecase.Game.UserJoins(user, game)
 	if err != nil {
 		return err
 	}
@@ -214,17 +180,12 @@ func joinGame(w http.ResponseWriter, req *http.Request) error {
 	return nil
 }
 
-func leaveGame(w http.ResponseWriter, req *http.Request) error {
-	// User is logged
-	u, err := userFromSession(w, req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-	}
+func leaveGame(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	game, err := gameFromRequest(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	err = usecase.Game.UserLeaves(u, game)
+	err = usecase.Game.UserLeaves(user, game)
 	if err != nil {
 		return err
 	}
@@ -236,11 +197,7 @@ func leaveGame(w http.ResponseWriter, req *http.Request) error {
 START GAME
 */
 
-func startGame(w http.ResponseWriter, req *http.Request) error {
-	u, err := userFromSession(w, req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-	}
+func startGame(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	req.ParseForm()
 	expansions := req.Form["expansion"]
 	handsize := req.Form["handsize"]
@@ -253,7 +210,7 @@ func startGame(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		return err
 	}
-	if g.Owner.ID != u.ID {
+	if g.Owner.ID != user.ID {
 		return errors.New("Only the game owner can start the game")
 	}
 	if err != nil {
@@ -273,7 +230,7 @@ func startGame(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		return err
 	}
-	log.Println("User", u.Username, "started the game:", g.Name)
+	log.Println("User", user.Username, "started the game:", g.Name)
 	http.Redirect(w, req, fmt.Sprintf("/games/%d/ingame", g.ID), http.StatusFound)
 	return nil
 }
@@ -282,8 +239,8 @@ func optionsFromCreateRequest(expansions []string, handsize, maxrounds string, r
 	ret := []cah.Option{}
 
 	// EXPANSIONS
-	blacks := usecase.Card.ExpansionBlacks(expansions...)
-	whites := usecase.Card.ExpansionWhites(expansions...)
+	blacks := usecase.Card.BlacksByExpansion(expansions...)
+	whites := usecase.Card.WhitesByExpansion(expansions...)
 	if len(blacks) < minBlacks {
 		return ret, fmt.Errorf("Not enough black cards to play a game. Please select more expansions. The amount of Black cards in selected expansions is %d, but the minimum is %d", len(blacks), minBlacks)
 	}

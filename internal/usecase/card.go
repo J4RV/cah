@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"log"
@@ -32,15 +31,15 @@ func (cc cardController) AllWhites() []*cah.WhiteCard {
 	return res
 }
 
-func (cc cardController) ExpansionWhites(exps ...string) []*cah.WhiteCard {
-	res, err := cc.store.ExpansionWhites(exps...)
-	checkErr(err, "cardController.ExpansionWhites")
+func (cc cardController) WhitesByExpansion(exps ...string) []*cah.WhiteCard {
+	res, err := cc.store.WhitesByExpansion(exps...)
+	checkErr(err, "cardController.WhitesByExpansion")
 	return res
 }
 
-func (cc cardController) ExpansionBlacks(exps ...string) []*cah.BlackCard {
-	res, err := cc.store.ExpansionBlacks(exps...)
-	checkErr(err, "cardController.ExpansionBlacks")
+func (cc cardController) BlacksByExpansion(exps ...string) []*cah.BlackCard {
+	res, err := cc.store.BlacksByExpansion(exps...)
+	checkErr(err, "cardController.BlacksByExpansion")
 	return res
 }
 
@@ -52,7 +51,7 @@ func (cc cardController) AvailableExpansions() []string {
 
 // CreateFromReaders creates and stores cards from two readers.
 // The reader should provide a card per line. A line can contain "\n"s for card line breaks.
-// Lines containing only whitespace are ignored
+// Lines containing only whitespace or starting with "#" are ignored
 func (cc cardController) CreateFromReaders(wdat, bdat io.Reader, expansionName string) error {
 	// Create cards from files
 	var err error
@@ -96,13 +95,4 @@ func (cc cardController) CreateFromFolder(folderPath, expansionName string) erro
 		return err
 	}
 	return cc.CreateFromReaders(wdat, bdat, expansionName)
-}
-
-func doEveryLine(r io.Reader, fun func(string)) error {
-	s := bufio.NewScanner(r)
-	for s.Scan() {
-		t := strings.Replace(s.Text(), "\\n", "\n", -1)
-		fun(t)
-	}
-	return s.Err()
 }
