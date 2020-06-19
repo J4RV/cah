@@ -22,17 +22,17 @@ func (store *userStore) Create(username string, password []byte) (cah.User, erro
 }
 
 func (store *userStore) ByID(id int) (cah.User, error) {
-	res := cah.User{}
-	if err := db.Get(&res, "SELECT * FROM user WHERE user = ?", id); err != nil {
-		return res, err
+	var user cah.User
+	if err := db.Get(&user, "SELECT * FROM user WHERE user = ?", id); err != nil {
+		return user, err
 	}
-	return res, nil
+	return user, nil
 }
 
 func (store *userStore) ByName(name string) (cah.User, error) {
-	res := cah.User{}
-	if err := db.Get(&res, "SELECT * FROM user WHERE username = ?", name); err != nil {
-		return res, err
+	var user cah.User
+	if err := db.Get(&user, "SELECT * FROM user WHERE username = ?", name); err != nil {
+		return user, err
 	}
-	return res, nil
+	return user, nil
 }

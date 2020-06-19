@@ -6,18 +6,18 @@ import (
 )
 
 func createTableUser() {
-	createTable("user", []string{
+	createTable("user",
 		"username TEXT UNIQUE",
 		"password VARBINARY(1024)",
 		"created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
-		"CHECK(username <> '' AND password <> '' AND LENGTH(username) <= 36)",
-	})
+		"CHECK(username <> '' AND LENGTH(password) <> 0 AND LENGTH(username) <= 36)",
+	)
 	createIndex("user", "username")
 }
 
 // methods for repetitive stuff
 
-func createTable(table string, columns []string) {
+func createTable(table string, columns ...string) {
 	if len(columns) == 0 {
 		panic("createTable method is for tables with at least one column")
 	}

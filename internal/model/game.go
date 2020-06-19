@@ -33,6 +33,8 @@ type Game struct {
 	Finished bool
 }
 
+// GAME STATE OPTIONS
+
 type GameOptions interface {
 	WhiteDeck([]*WhiteCard) Option
 	BlackDeck([]*BlackCard) Option

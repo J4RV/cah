@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/j4rv/cah/db/mem"
-	"github.com/j4rv/cah/usecase/fixture"
+	"github.com/j4rv/cah/internal/db/mem"
+	"github.com/j4rv/cah/internal/usecase/fixture"
 
 	cah "github.com/j4rv/cah/internal/model"
 )

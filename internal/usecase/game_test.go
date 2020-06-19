@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/j4rv/cah/db/mem"
+	"github.com/j4rv/cah/internal/db/mem"
 	cah "github.com/j4rv/cah/internal/model"
 )
 

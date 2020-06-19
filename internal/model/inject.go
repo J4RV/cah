@@ -6,3 +6,10 @@ type DataStore struct {
 	Card      CardStore
 	User      UserStore
 }
+
+type Usecases struct {
+	Game      GameUsecases
+	GameState GameStateUsecases
+	Card      CardUsecases
+	User      UserUsecases
+}
