@@ -1,3 +1,5 @@
+![Go](https://github.com/j4rv/cah/workflows/Go/badge.svg)
+
 ### EZ install to raspberry pi
 
 ```
