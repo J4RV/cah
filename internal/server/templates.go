@@ -2,7 +2,6 @@ package server
 
 import (
 	"html/template"
-	"io"
 	"log"
 	"net/http"
 )
@@ -43,11 +42,12 @@ var templateFiles = map[tmplID][]string{
 
 var compiledTemplates = map[tmplID]*template.Template{}
 
-func execTemplate(id tmplID, w io.Writer, data interface{}) {
+func execTemplate(id tmplID, w http.ResponseWriter, status int, data interface{}) {
 	if compiledTemplates[id] == nil {
 		compiledTemplates[id] = parseTemplate(id)
 	}
 
+	w.WriteHeader(status)
 	err := compiledTemplates[id].Execute(w, data)
 	if err != nil {
 		log.Println("Error while executing template", id, err)
@@ -59,9 +59,9 @@ func execTemplate(id tmplID, w io.Writer, data interface{}) {
 	}
 }
 
-func simpleTmplHandler(id tmplID) func(w http.ResponseWriter, req *http.Request) {
+func simpleTmplHandler(id tmplID, status int) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
-		execTemplate(id, w, nil)
+		execTemplate(id, w, status, nil)
 	}
 }
 

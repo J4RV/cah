@@ -37,7 +37,7 @@ func gamesPageHandler(user cah.User, w http.ResponseWriter, req *http.Request) e
 	if err != nil {
 		return err
 	}
-	execTemplate(gamesPageTmpl, w, gamesPageCtx{
+	execTemplate(gamesPageTmpl, w, http.StatusOK, gamesPageCtx{
 		LoggedUser:      user,
 		InProgressGames: inProgress,
 		OpenGames:       openGames,
@@ -51,7 +51,7 @@ type createGamePageCtx struct {
 }
 
 func createGamePageHandler(user cah.User, w http.ResponseWriter, req *http.Request) error {
-	execTemplate(createGamePageTmpl, w, lobbyPageCtx{
+	execTemplate(createGamePageTmpl, w, http.StatusOK, lobbyPageCtx{
 		LoggedUser: user,
 		Flashes:    getFlashes(gamesFlashKey, w, req),
 	})
@@ -65,13 +65,8 @@ type lobbyPageCtx struct {
 	Flashes             []interface{}
 }
 
-func lobbyPageHandler(user cah.User, w http.ResponseWriter, req *http.Request) error {
-	game, err := gameFromRequest(req)
-	if err != nil {
-		addFlashMsg(gameDoesntExistMsg, gamesFlashKey, w, req)
-		return err
-	}
-	execTemplate(lobbyPageTmpl, w, lobbyPageCtx{
+func lobbyPageHandler(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
+	execTemplate(lobbyPageTmpl, w, http.StatusOK, lobbyPageCtx{
 		LoggedUser:          user,
 		Game:                game,
 		AvailableExpansions: usecase.Card.AvailableExpansions(),
@@ -86,13 +81,8 @@ type ingamePageCtx struct {
 	Flashes    []interface{}
 }
 
-func ingamePageHandler(user cah.User, w http.ResponseWriter, req *http.Request) error {
-	game, err := gameFromRequest(req)
-	if err != nil {
-		addFlashMsg(gameDoesntExistMsg, gamesFlashKey, w, req)
-		return err
-	}
-	execTemplate(ingamePageTmpl, w, lobbyPageCtx{
+func ingamePageHandler(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
+	execTemplate(ingamePageTmpl, w, http.StatusOK, lobbyPageCtx{
 		LoggedUser: user,
 		Game:       game,
 		Flashes:    getFlashes(gamesFlashKey, w, req),
@@ -114,12 +104,8 @@ type gameRoomResponse struct {
 	StateID     int      `json:"stateID"`
 }
 
-func lobbyState(user cah.User, w http.ResponseWriter, req *http.Request) error {
-	g, err := gameFromRequest(req)
-	if err != nil {
-		return err
-	}
-	writeResponse(w, gameToResponse(g))
+func lobbyState(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
+	writeResponse(w, gameToResponse(game))
 	return nil
 }
 
@@ -167,12 +153,8 @@ func createGame(user cah.User, w http.ResponseWriter, req *http.Request) error {
 JOIN AND LEAVE GAME
 */
 
-func joinGame(user cah.User, w http.ResponseWriter, req *http.Request) error {
-	game, err := gameFromRequest(req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-	err = usecase.Game.UserJoins(user, game)
+func joinGame(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
+	err := usecase.Game.UserJoins(user, game)
 	if err != nil {
 		return err
 	}
@@ -180,12 +162,8 @@ func joinGame(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	return nil
 }
 
-func leaveGame(user cah.User, w http.ResponseWriter, req *http.Request) error {
-	game, err := gameFromRequest(req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-	err = usecase.Game.UserLeaves(user, game)
+func leaveGame(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
+	err := usecase.Game.UserLeaves(user, game)
 	if err != nil {
 		return err
 	}

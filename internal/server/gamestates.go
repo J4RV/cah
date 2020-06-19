@@ -87,19 +87,18 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		return
 	}
-	gsID, err := gameStateIDFromRequest(req)
+	gameState, err := gameStateFromRequest(req)
 	if err != nil {
 		return
 	}
-	gameState, err := usecase.GameState.ByID(gsID)
 	p, err := player(gameState, u)
 	if err != nil {
 		return
 	}
 
 	eventListener := make(chan *cah.GameState)
-	startListening(gsID, &eventListener)
-	log.Println("User started listening:", u.Username, "game:", gsID)
+	startListening(gameState.ID, &eventListener)
+	log.Println("User started listening:", u.Username, "game:", gameState.ID)
 
 	for {
 		err = conn.WriteJSON(newGameStateResponse(gameState, p))
@@ -109,8 +108,8 @@ func gameStateWebsocket(w http.ResponseWriter, req *http.Request) {
 		gameState = <-eventListener
 	}
 
-	stopListening(gsID, &eventListener)
-	log.Println("User stopped listening:", u.Username, "game:", gsID)
+	stopListening(gameState.ID, &eventListener)
+	log.Println("User stopped listening:", u.Username, "game:", gameState.ID)
 }
 
 func newGameStateResponse(gs *cah.GameState, player *cah.Player) *gameStateResponse {
@@ -184,16 +183,11 @@ type chooseWinnerPayload struct {
 	Winner int `json:"winner"`
 }
 
-func chooseWinner(w http.ResponseWriter, req *http.Request) error {
-	// User is logged
-	u, err := userFromSession(w, req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-	}
+func chooseWinner(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	// Decode user's payload
 	var payload chooseWinnerPayload
 	decoder := json.NewDecoder(req.Body)
-	err = decoder.Decode(&payload)
+	err := decoder.Decode(&payload)
 	if err != nil {
 		return errors.New("Misconstructed payload")
 	}
@@ -201,7 +195,7 @@ func chooseWinner(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		return err
 	}
-	pid, err := playerIndex(gs, u)
+	pid, err := playerIndex(gs, user)
 	if err != nil {
 		return err
 	}
@@ -224,16 +218,11 @@ type playCardsPayload struct {
 	CardIndexes []int `json:"cardIndexes"`
 }
 
-func playCards(w http.ResponseWriter, req *http.Request) error {
-	// User is logged
-	u, err := userFromSession(w, req)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusForbidden)
-	}
+func playCards(user cah.User, w http.ResponseWriter, req *http.Request) error {
 	// Decode user's payload
 	var payload playCardsPayload
 	decoder := json.NewDecoder(req.Body)
-	err = decoder.Decode(&payload)
+	err := decoder.Decode(&payload)
 	if err != nil {
 		return errors.New("Misconstructed payload")
 	}
@@ -241,7 +230,7 @@ func playCards(w http.ResponseWriter, req *http.Request) error {
 	if err != nil {
 		return err
 	}
-	pid, err := playerIndex(gs, u)
+	pid, err := playerIndex(gs, user)
 	if err != nil {
 		return err
 	}
@@ -273,7 +262,8 @@ func player(g *cah.GameState, u cah.User) (*cah.Player, error) {
 }
 
 func gameStateFromRequest(req *http.Request) (*cah.GameState, error) {
-	id, err := gameStateIDFromRequest(req)
+	strID := mux.Vars(req)["gameStateID"]
+	id, err := strconv.Atoi(strID)
 	if err != nil {
 		return &cah.GameState{}, err
 	}
@@ -282,9 +272,4 @@ func gameStateFromRequest(req *http.Request) (*cah.GameState, error) {
 		return g, fmt.Errorf("Could not get game state from request. ID: %d", id)
 	}
 	return g, nil
-}
-
-func gameStateIDFromRequest(req *http.Request) (int, error) {
-	strID := mux.Vars(req)["gameStateID"]
-	return strconv.Atoi(strID)
 }

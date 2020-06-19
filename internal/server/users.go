@@ -13,7 +13,7 @@ import (
 const wrongUserOrPassMsg = "The username or password you entered is incorrect."
 const notLoggedInMsg = "You need to be logged in to see that page."
 const loginRedirect = "/login"
-const afterLoginRedirect = "/games"
+const gameListRedirect = "/games"
 const loginFlashKey = "login-flash"
 
 const sessionAge = 60 * 15                    // 15 min
@@ -24,12 +24,11 @@ const rememberMeSessionAge = 60 * 60 * 24 * 7 // 1 week
 */
 
 func loginPageHandler(w http.ResponseWriter, req *http.Request) {
-	_, err := userFromSession(w, req)
-	if err == nil {
-		http.Redirect(w, req, afterLoginRedirect, http.StatusFound)
+	if _, err := userFromSession(w, req); err == nil {
+		http.Redirect(w, req, gameListRedirect, http.StatusFound)
 		return
 	}
-	execTemplate(loginPageTmpl, w, getFlashes(loginFlashKey, w, req))
+	execTemplate(loginPageTmpl, w, http.StatusOK, getFlashes(loginFlashKey, w, req))
 }
 
 func processLogin(w http.ResponseWriter, req *http.Request) {
@@ -51,7 +50,7 @@ func processLogin(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// everything ok, back to index with your brand new session!
-	http.Redirect(w, req, afterLoginRedirect, http.StatusFound)
+	http.Redirect(w, req, gameListRedirect, http.StatusFound)
 }
 
 func processRegister(w http.ResponseWriter, req *http.Request) {
@@ -73,7 +72,7 @@ func processRegister(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// everything ok, back to index with your brand new session!
-	http.Redirect(w, req, afterLoginRedirect, http.StatusFound)
+	http.Redirect(w, req, gameListRedirect, http.StatusFound)
 }
 
 func processLogout(w http.ResponseWriter, req *http.Request) {
@@ -82,20 +81,22 @@ func processLogout(w http.ResponseWriter, req *http.Request) {
 	session.Options.MaxAge = -1
 	err := session.Save(req, w)
 	if err != nil {
+		log.Println("Error logging out session", session, ". Err:", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, req, "/", http.StatusFound)
 }
 
-func startSession(u cah.User, rememberme bool, w http.ResponseWriter, req *http.Request) error {
+func startSession(user cah.User, rememberme bool, w http.ResponseWriter, req *http.Request) error {
 	session := getSession(w, req)
-	session.Values["user_id"] = u.ID
+	session.Values["user_id"] = user.ID
 	if rememberme {
 		session.Options.MaxAge = rememberMeSessionAge
 	}
 	err := session.Save(req, w)
 	if err != nil {
+		log.Println("Error starting session for user", user.Username, ". Err:", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
 	}
@@ -151,7 +152,10 @@ func addFlashMsg(msg string, key string, w http.ResponseWriter, req *http.Reques
 	log.Printf("%s got flashed: '%s'", req.RemoteAddr, msg)
 	session := getSession(w, req)
 	session.AddFlash(msg, key)
-	session.Save(req, w)
+	err := session.Save(req, w)
+	if err != nil {
+		log.Println("ERROR saving session:", err.Error())
+	}
 }
 
 func getFlashes(key string, w http.ResponseWriter, req *http.Request) []interface{} {
@@ -160,6 +164,9 @@ func getFlashes(key string, w http.ResponseWriter, req *http.Request) []interfac
 	if len(flashes) == 0 {
 		return []interface{}{}
 	}
-	session.Save(req, w)
+	err := session.Save(req, w)
+	if err != nil {
+		log.Println("ERROR saving session:", err.Error())
+	}
 	return flashes
 }

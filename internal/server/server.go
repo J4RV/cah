@@ -58,7 +58,7 @@ func Start(uc cah.Usecases) {
 
 	router := mux.NewRouter()
 
-	router.NotFoundHandler = http.HandlerFunc(simpleTmplHandler(notFoundPageTmpl))
+	router.NotFoundHandler = http.HandlerFunc(simpleTmplHandler(notFoundPageTmpl, http.StatusNotFound))
 
 	setRestRouterHandlers(router)
 	setTemplateRouterHandlers(router)
@@ -86,17 +86,17 @@ func setRestRouterHandlers(r *mux.Router) {
 	{
 		s := restRouter.PathPrefix("/game").Subrouter()
 		s.Handle("/create", loggedInHandler(createGame)).Methods("POST")
-		s.Handle("/{gameID}/lobby-state", loggedInHandler(lobbyState)).Methods("GET")
-		s.Handle("/{gameID}/join", loggedInHandler(joinGame)).Methods("POST")
-		s.Handle("/{gameID}/leave", loggedInHandler(leaveGame)).Methods("POST")
+		s.Handle("/{gameID}/lobby-state", gameHandler(lobbyState)).Methods("GET")
+		s.Handle("/{gameID}/join", gameHandler(joinGame)).Methods("POST")
+		s.Handle("/{gameID}/leave", gameHandler(leaveGame)).Methods("POST")
 		s.Handle("/{gameID}/start", loggedInHandler(startGame)).Methods("POST")
 	}
 
 	{
 		s := restRouter.PathPrefix("/gamestate/{gameStateID}").Subrouter()
 		s.HandleFunc("/state-websocket", gameStateWebsocket).Methods("GET")
-		s.Handle("/choose-winner", srvHandler(chooseWinner)).Methods("POST")
-		s.Handle("/play-cards", srvHandler(playCards)).Methods("POST")
+		s.Handle("/choose-winner", loggedInHandler(chooseWinner)).Methods("POST")
+		s.Handle("/play-cards", loggedInHandler(playCards)).Methods("POST")
 	}
 
 }
@@ -106,8 +106,8 @@ func setTemplateRouterHandlers(r *mux.Router) {
 	r.HandleFunc("/login", loginPageHandler)
 	r.Handle("/games", loggedInHandler(gamesPageHandler))
 	r.Handle("/games/create", loggedInHandler(createGamePageHandler))
-	r.Handle("/games/{gameID}", loggedInHandler(lobbyPageHandler))
-	r.Handle("/games/{gameID}/ingame", loggedInHandler(ingamePageHandler))
+	r.Handle("/games/{gameID}", gameHandler(lobbyPageHandler))
+	r.Handle("/games/{gameID}/ingame", gameHandler(ingamePageHandler))
 }
 
 // StartServer starts the server using the provided router
@@ -145,13 +145,27 @@ func (fn srvHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 type loggedInHandler func(cah.User, http.ResponseWriter, *http.Request) error
 
 func (fn loggedInHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	user, err := userFromSession(w, req)
-	if err != nil {
-		addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
-		http.Redirect(w, req, "/login", http.StatusFound)
-		return
-	}
 	srvHandler(func(w http.ResponseWriter, req *http.Request) error {
+		user, err := userFromSession(w, req)
+		if err != nil {
+			addFlashMsg(notLoggedInMsg, loginFlashKey, w, req)
+			execTemplate(loginPageTmpl, w, http.StatusUnauthorized, getFlashes(loginFlashKey, w, req))
+			return err
+		}
 		return fn(user, w, req)
-	})(w, req)
+	}).ServeHTTP(w, req)
+}
+
+type gameHandler func(cah.Game, cah.User, http.ResponseWriter, *http.Request) error
+
+func (fn gameHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	loggedInHandler(func(user cah.User, w http.ResponseWriter, req *http.Request) error {
+		game, err := gameFromRequest(req)
+		if err != nil {
+			addFlashMsg(gameDoesntExistMsg, gamesFlashKey, w, req)
+			http.Redirect(w, req, gameListRedirect, http.StatusFound)
+			return err
+		}
+		return fn(game, user, w, req)
+	}).ServeHTTP(w, req)
 }
