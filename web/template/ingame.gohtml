@@ -2,8 +2,50 @@
 {{template "logged-header" .}}
 
 <div class="main">
-  <h4>{{.Game.Name}}</h4>
-
+<div class="ingame" v-if="gamestate">
+  <div class="game-grid">
+    <div id="table-item">
+      {{range $flash := .Flashes}}
+        <p class="err-msg">{{$flash}}</p>
+      {{end}}
+      <p class="err-msg" v-for="flash in vueFlashes">${flash}</p>
+      <h4>{{.Game.Name}}</h4>
+      <div id="black-card" class="card black-card in-table">
+        <p>${gamestate.blackCardInPlay.text}</p>
+        <p class="card-expansion-text">${gamestate.blackCardInPlay.expansion}</p>
+      </div>
+    </div>
+    <div id="players-item">
+      <ol>
+        <li class="player-item floating" v-for="player in gamestate.players">
+          ${player.name}
+          <div>
+            <small v-if="player.id == gamestate.currentCzarID"><b>Czar</b></small>
+            <small v-else-if="player.whiteCardsInPlay">Waiting</small>
+            <small v-else>Playing</small>
+          </div>
+        </li>
+      </ol>
+    </div>
+    <div id="tip-item">
+      <h6>${tip}</h6>
+    </div>
+    <div id="hand-item">
+      <div v-for="(card, index) in gamestate.myPlayer.hand"
+        :data-card-index="index"
+        class="card white-card floating"      
+        onclick="whiteCardClick(this)"
+      >
+        <p>${card.text}</p>
+        <p class="card-expansion-text">${card.expansion}</p>
+      </div>
+    </div>
+  </div>
+  <button class="confirm-button primary-button">✓</button>
+</div>
+<div v-else>
+  Loading...
+</div>
 </div>
 
 {{end}}
@@ -15,26 +57,32 @@ const MAX_RETRIES_ON_SOCKET_CLOSED = 4
 var app = new Vue({
   el: '.main',
   delimiters: VUE_DELIMITERS,
-  // data type: gameStateResponse
   data: {
-    players: [],
-  }
+    gamestate: undefined,
+    vueFlashes: [],
+    selection: {},
+  },
+  updated: randomRotateCards,
 })
 
-const startWebsocket = (retries) => {
+function startWebsocket(retries) {
   const sock = new WebSocket(relativeWebSocketUrl("/api/game/{{.Game.ID}}/state/websocket"))
 
   sock.onmessage = (e) => {
     retries = MAX_RETRIES_ON_SOCKET_CLOSED
-    let data = JSON.parse(e.data)
-    console.log(data)
-    app.players = data.players
+    app.vueFlashes = []
+
+    // data type: gameStateResponse
+    let gamestate = JSON.parse(e.data)
+    console.log(gamestate)
+    app.gamestate = gamestate
+    app.tip = getPlayerTip(gamestate)
   }
 
   sock.onclose = () => {
     retries--
     if (retries <= 0) {
-      //this.props.pushError("Could not reconnect to server.")
+      app.vueFlashes.push("Could not reconnect to server.")
       return
     }
     console.error("Server Connection was lost, reconnecting...")
@@ -42,11 +90,101 @@ const startWebsocket = (retries) => {
   }
 
   sock.onerror = (err) => {
-    //this.props.pushError("Server Connection error: " + err.message)
+    app.vueFlashes.push("Server Connection error: " + err.message)
     sock.close()
+  }
+}
+
+function getPlayerTip(state) {
+  return "Play one card"
+}
+
+function whiteCardClick(card) {
+  let cardIndex = card.dataset.cardIndex
+  console.log(cardIndex)
+  if (app.selection[cardIndex]) {
+    delete app.selection[cardIndex]
+  } else {
+    app.selection[cardIndex] = true
   }
 }
 
 startWebsocket(MAX_RETRIES_ON_SOCKET_CLOSED)
 </script>
+{{end}}
+
+{{define "style"}}
+<style>
+.game-grid {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+}
+
+#table-item {
+  grid-column: 1 / span 1;
+  grid-row: 1 / span 1;
+  border: 1px solid;
+}
+
+#tip-item {
+  grid-column: 1 / span 1;
+  grid-row: 2 / span 1;
+  border: 1px solid;
+}
+
+#players-item {
+  grid-column: 2 / span 1;
+  grid-row: 1 / span 3;
+  border: 1px solid;
+}
+
+#hand-item {
+  grid-column: 1 / span 1;
+  grid-row: 3 / span 1;
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  border: 1px solid;
+}
+
+.card {
+  margin: 1rem 0.5rem;
+  display: inline-block;
+}
+
+.player-item {
+  margin: 8px;
+  padding: 8px;
+  color: var(--color-bg);
+  background: var(--color-font);
+  border-radius: 4px;
+  text-align: left;
+  min-width: 6rem;
+}
+
+.confirm-button {
+  height: 6rem;
+  width: 6rem;
+  border-radius: 3rem;
+  font-size: 3rem;
+  margin: 1rem 16px 1rem auto;
+  display: block;
+  position: sticky;
+  bottom: 16px;
+}
+
+@media (max-width: 749px) {
+  #players-item {
+    grid-row: 1 / span 1;
+  }
+  #tip-item {
+    grid-column: 1 / span 2;
+  }
+  #hand-item {
+    grid-column: 1 / span 2;
+  }
+}
+</style>
 {{end}}
