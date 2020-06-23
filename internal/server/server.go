@@ -14,9 +14,7 @@ import (
 )
 
 var port, secureport int
-var usingTLS bool
 var devMode bool
-var serverCert, serverPK string
 
 var config cah.Config
 var usecase cah.Usecases
@@ -26,24 +24,6 @@ var logError = log.New(os.Stderr, "[ERROR]", log.LstdFlags)
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-}
-
-func init() {
-	parseFlags()
-	initCertificateStuff()
-	initCookieStore()
-}
-
-func initCertificateStuff() {
-	serverCert = os.Getenv("SERVER_CERTIFICATE")
-	serverPK = os.Getenv("SERVER_PRIVATE_KEY")
-	usingTLS = serverCert != "" && serverPK != ""
-	if serverCert == "" {
-		log.Println("[WARN] Server certificate not found. Environment variable: SERVER_CERTIFICATE")
-	}
-	if serverPK == "" {
-		log.Println("[WARN] Server private key not found. Environment variable: SERVER_PRIVATE_KEY")
-	}
 }
 
 func parseFlags() {
@@ -58,10 +38,12 @@ func Start(cfg cah.Config, uc cah.Usecases) {
 	config = cfg
 	usecase = uc
 
+	parseFlags()
+	initCookieStore()
+	initTemplates()
+
 	router := mux.NewRouter()
-
 	router.NotFoundHandler = http.HandlerFunc(simpleTmplHandler(notFoundPageTmpl, http.StatusNotFound))
-
 	setRestRouterHandlers(router)
 	setTemplateRouterHandlers(router)
 
@@ -124,18 +106,8 @@ func StartServer(r *mux.Router) {
 		log.Fatal(http.ListenAndServe(":"+envPort, r))
 	}
 
-	if usingTLS {
-		go func() {
-			log.Printf("Starting http server in port %d\n", port)
-			log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
-		}()
-		log.Printf("Starting https server in port %d\n", secureport)
-		log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", secureport), serverCert, serverPK, r))
-	} else {
-		log.Println("Server will listen and serve without TLS")
-		log.Printf("Starting http server in port %d\n", port)
-		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
-	}
+	log.Printf("Starting http server in port %d\n", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
 }
 
 // Handler wrappers

@@ -6,16 +6,16 @@ import (
 	"net/http"
 )
 
+// Template definitions
+
 type tmplID string
 
 var tmplBase = []string{
-	config.TemplatePath + "components/layout/base.gohtml",
-	config.TemplatePath + "components/layout/base-style.gohtml",
-	config.TemplatePath + "components/layout/base-js.gohtml",
-	config.TemplatePath + "components/layout/css-reset.gohtml",
+	"layout/base.gohtml",
+	"layout/base-style.gohtml",
+	"layout/base-js.gohtml",
+	"layout/css-reset.gohtml",
 }
-
-// Template definitions
 
 const (
 	loginPageTmpl      tmplID = "Login"
@@ -26,14 +26,46 @@ const (
 	notFoundPageTmpl   tmplID = "Not found"
 )
 
-// FIXME reduce verbosity
 var templateFiles = map[tmplID][]string{
-	loginPageTmpl:      append(tmplBase, config.TemplatePath+"login.gohtml"),
-	notFoundPageTmpl:   append(tmplBase, config.TemplatePath+"404.gohtml"),
-	gamesPageTmpl:      append(tmplBase, config.TemplatePath+"games.gohtml", config.TemplatePath+"components/logged-header.gohtml"),
-	lobbyPageTmpl:      append(tmplBase, config.TemplatePath+"lobby.gohtml", config.TemplatePath+"components/logged-header.gohtml", config.TemplatePath+"components/import-vue.gohtml"),
-	ingamePageTmpl:     append(tmplBase, config.TemplatePath+"ingame.gohtml", config.TemplatePath+"components/logged-header.gohtml", config.TemplatePath+"components/import-vue.gohtml"),
-	createGamePageTmpl: append(tmplBase, config.TemplatePath+"create-game.gohtml", config.TemplatePath+"components/logged-header.gohtml"),
+	loginPageTmpl: append([]string{
+		"login.gohtml",
+	}, tmplBase...),
+
+	notFoundPageTmpl: append([]string{
+		"404.gohtml",
+	}, tmplBase...),
+
+	gamesPageTmpl: append([]string{
+		"games.gohtml",
+		"components/logged-header.gohtml",
+	}, tmplBase...),
+
+	lobbyPageTmpl: append([]string{
+		"lobby.gohtml",
+		"components/logged-header.gohtml",
+		"components/import-vue.gohtml",
+	}, tmplBase...),
+
+	ingamePageTmpl: append([]string{
+		"ingame.gohtml",
+		"components/logged-header.gohtml",
+		"components/import-vue.gohtml",
+	}, tmplBase...),
+
+	createGamePageTmpl: append([]string{
+		"create-game.gohtml",
+		"components/logged-header.gohtml",
+	}, tmplBase...),
+}
+
+func initTemplates() {
+	// adds the config path prefix to templateFiles
+	for id := range templateFiles {
+		templatesWithPath := templateFiles[id]
+		for i := range templatesWithPath {
+			templatesWithPath[i] = config.TemplatePath + templatesWithPath[i]
+		}
+	}
 }
 
 // Functions to be called from outside this file to render the templates:
