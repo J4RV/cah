@@ -38,7 +38,7 @@ func (store *cardMemStore) CreateWhite(t, e string) error {
 	store.Lock()
 	defer store.Unlock()
 	c := &cah.WhiteCard{}
-	c.ID = store.nextID()
+	c.ID = uint(store.nextID())
 	c.Text = t
 	c.Expansion = e
 	store.whiteCards[e] = append(store.whiteCards[e], c)

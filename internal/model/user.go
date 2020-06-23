@@ -19,5 +19,5 @@ type UserUsecases interface {
 type User struct {
 	gorm.Model
 	Username string `json:"username" gorm:"unique;not null"`
-	Password []byte `json:"-" gorm:"default:null;not null"`
+	Password []byte `json:"-" gorm:"default:NULL;not null"`
 }

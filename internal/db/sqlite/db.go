@@ -22,7 +22,14 @@ func InitDB(dbFileName string) {
 }
 
 func CreateTables() {
-	err := db.AutoMigrate(&cah.User{})
+	must(db.AutoMigrate(&cah.User{}))
+	must(db.AutoMigrate(&cah.BlackCard{}))
+	must(db.AutoMigrate(&cah.WhiteCard{}))
+	must(db.AutoMigrate(&cah.Winner{}))
+	must(db.AutoMigrate(&cah.GameStats{}))
+}
+
+func must(err error) {
 	if err != nil {
 		panic(err)
 	}

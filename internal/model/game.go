@@ -1,5 +1,7 @@
 package cah
 
+import "gorm.io/gorm"
+
 type GameStore interface {
 	Create(Game) (Game, error)
 	ByID(int) (Game, error)
@@ -38,14 +40,18 @@ type Game struct {
 }
 
 type GameStats struct {
+	gorm.Model
 	ID      int
 	GameID  int
 	Winners []Winner
 }
 
 type Winner struct {
-	User   User
-	Prizes []BlackCard
+	gorm.Model
+	GameStatsID uint
+	User        User `gorm:"ForeignKey:UserID;References:id"`
+	UserID      uint
+	Prizes      []BlackCard `gorm:"many2many:winner_black_cards;ForeignKey:id;References:id"`
 }
 
 // GAME STATE OPTIONS
