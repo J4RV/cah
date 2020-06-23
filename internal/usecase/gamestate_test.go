@@ -12,7 +12,7 @@ var control = stateController{}
 
 func getStateUsecase() cah.GameStateUsecases {
 	store := mem.GetGameStateStore(cah.DataStore{})
-	usecase := NewGameStateUsecase(cah.Usecases{}, store)
+	usecase := NewGameStateUsecase(nil, store)
 	return usecase
 }
 

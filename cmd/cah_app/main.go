@@ -45,10 +45,10 @@ func run(cfg cah.Config) {
 	dataStore.User = sqlite.NewUserStore(dataStore)
 
 	usecases := cah.Usecases{}
-	usecases.GameState = usecase.NewGameStateUsecase(usecases, dataStore.GameState)
-	usecases.Game = usecase.NewGameUsecase(usecases, dataStore.Game)
-	usecases.Card = usecase.NewCardUsecase(usecases, dataStore.Card)
-	usecases.User = usecase.NewUserUsecase(usecases, dataStore.User)
+	usecases.GameState = usecase.NewGameStateUsecase(&usecases, dataStore.GameState)
+	usecases.Game = usecase.NewGameUsecase(&usecases, dataStore.Game)
+	usecases.Card = usecase.NewCardUsecase(&usecases, dataStore.Card)
+	usecases.User = usecase.NewUserUsecase(&usecases, dataStore.User)
 
 	loadCards(cfg.ExpansionsPath, usecases.Card)
 

@@ -7,5 +7,5 @@ import (
 
 func getGameUsecase() cah.GameUsecases {
 	store := mem.GetGameStore(cah.DataStore{})
-	return NewGameUsecase(cah.Usecases{}, store)
+	return NewGameUsecase(nil, store)
 }

@@ -16,7 +16,7 @@ var commonPassHash, _ = userPassHash(commonPass)
 
 func getUserUsecase() cah.UserUsecases {
 	store := mem.GetUserStore(cah.DataStore{})
-	usecase := NewUserUsecase(cah.Usecases{}, store)
+	usecase := NewUserUsecase(nil, store)
 	fixture.PopulateUsers(usecase)
 	return usecase
 }

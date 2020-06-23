@@ -51,6 +51,7 @@ type gameStateResponse struct {
 	MaxRounds       int            `json:"maxRounds"`
 }
 
+// Map of GameStateID -> Channels of clients that are interested in that gamestate
 var gameStateListeners = make(map[int][]chan *cah.GameState)
 
 func startListening(gsID int, cb chan *cah.GameState) {
@@ -58,15 +59,14 @@ func startListening(gsID int, cb chan *cah.GameState) {
 }
 
 func stopListening(gsID int, cb chan *cah.GameState) {
-	var cbRemoved []chan *cah.GameState
-	for _, listener := range gameStateListeners[gsID] {
-		if cb == listener {
-			close(cb)
+	for i := range gameStateListeners[gsID] {
+		if cb != gameStateListeners[gsID][i] {
 			continue
 		}
-		cbRemoved = append(cbRemoved, listener)
+		gameStateListeners[gsID] = append(gameStateListeners[gsID][:i], gameStateListeners[gsID][i+1:]...)
+		break
 	}
-	gameStateListeners[gsID] = cbRemoved
+	close(cb)
 }
 
 func gameStateUpdated(gs *cah.GameState) {

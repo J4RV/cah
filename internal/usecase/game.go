@@ -15,7 +15,7 @@ type gameController struct {
 }
 
 // NewGameUsecase returns a cah.GameUsecases
-func NewGameUsecase(uc cah.Usecases, store cah.GameStore) cah.GameUsecases {
+func NewGameUsecase(uc *cah.Usecases, store cah.GameStore) cah.GameUsecases {
 	return &gameController{
 		store: store,
 	}

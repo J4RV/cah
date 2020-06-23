@@ -20,11 +20,11 @@ func (e errorEmptyBlackDeck) Error() string {
 
 type stateController struct {
 	store   cah.GameStateStore
-	usecase cah.Usecases
+	usecase *cah.Usecases
 }
 
 // NewGameStateUsecase returns a cah.GameStateUsecases
-func NewGameStateUsecase(uc cah.Usecases, store cah.GameStateStore) cah.GameStateUsecases {
+func NewGameStateUsecase(uc *cah.Usecases, store cah.GameStateStore) cah.GameStateUsecases {
 	return &stateController{store: store, usecase: uc}
 }
 
@@ -110,7 +110,7 @@ func (control stateController) GiveBlackCardToWinner(wID int, g *cah.GameState) 
 
 func giveBlackCardToWinnerChecks(w int, s *cah.GameState) error {
 	if s.Phase != cah.CzarChoosingWinner {
-		return fmt.Errorf("Tried to choose a winner in a non valid phase '%d'", s.Phase)
+		return fmt.Errorf("Tried to choose a winner in a non valid phase '%s'", s.Phase)
 	}
 	for i, p := range s.Players {
 		if i == s.CurrCzarIndex {

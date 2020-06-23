@@ -15,7 +15,7 @@ type cardController struct {
 }
 
 // NewCardUsecase returns a cah.CardUsecases
-func NewCardUsecase(uc cah.Usecases, store cah.CardStore) cah.CardUsecases {
+func NewCardUsecase(uc *cah.Usecases, store cah.CardStore) cah.CardUsecases {
 	return &cardController{store: store}
 }
 
