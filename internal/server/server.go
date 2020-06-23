@@ -10,7 +10,6 @@ import (
 	cah "github.com/j4rv/cah/internal/model"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
 )
 
 var port, secureport int
@@ -20,11 +19,6 @@ var config cah.Config
 var usecase cah.Usecases
 
 var logError = log.New(os.Stderr, "[ERROR]", log.LstdFlags)
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
 
 func parseFlags() {
 	flag.IntVar(&port, "port", 80, "Server port for serving HTTP")

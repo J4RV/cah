@@ -86,6 +86,7 @@ Vue.component("player-point", {
 
 function startWebsocket(retries) {
   const sock = new WebSocket(relativeWebSocketUrl("/api/game/{{.Game.ID}}/state/websocket"))
+  window.onbeforeunload = e => sock.close()
 
   sock.onmessage = (e) => {
     retries = MAX_RETRIES_ON_SOCKET_CLOSED
@@ -122,6 +123,9 @@ function getPlayerTip(state) {
   if (state.phase === "Sinners playing their cards") {
     if (state.myPlayer.id === state.currentCzarID) {
       return "Wait until all sinners play their cards"
+    }
+    if (state.myPlayer.whiteCardsInPlay.length != 0) {
+      return "Wait until all other sinners play their cards"
     }
     let blanks = state.blackCardInPlay.blanks
     if (blanks === 1) {

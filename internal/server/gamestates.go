@@ -6,7 +6,9 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"time"
 
+	"github.com/gorilla/websocket"
 	cah "github.com/j4rv/cah/internal/model"
 )
 
@@ -72,37 +74,66 @@ func gameStateUpdated(gs *cah.GameState) {
 	}
 }
 
-func gameStateWebsocket(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
-	conn, err := upgrader.Upgrade(w, req, nil)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
+var upgrader = websocket.Upgrader{
+	HandshakeTimeout: 5 * time.Second,
+}
 
+const (
+	writeWait  = 10 * time.Second
+	pingPeriod = 30 * time.Second
+	pongWait   = 60 * time.Second
+)
+
+func gameStateWebsocket(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) (err error) {
 	gameState, err := usecase.GameState.ByID(game.StateID)
 	if err != nil {
-		return err
+		return
 	}
+
 	p, err := player(gameState, user)
 	if err != nil {
-		return err
+		return
 	}
 
+	conn, err := upgrader.Upgrade(w, req, nil)
+	if err != nil {
+		return
+	}
+
+	ticker := time.NewTicker(pingPeriod)
 	eventListener := make(chan *cah.GameState)
 	startListening(gameState.ID, &eventListener)
-	log.Println("User started listening:", user.Username, "game:", gameState.ID)
+	log.Printf("[Game: %s][User: %s] Started listening", game.Name, user.Username)
+
+	defer func() {
+		ticker.Stop()
+		conn.Close()
+		stopListening(gameState.ID, &eventListener)
+		log.Printf("[Game: %s][User: %s] Stopped listening", game.Name, user.Username)
+	}()
+
+	// Start by returning the current state
+	conn.WriteJSON(newGameStateResponse(gameState, p))
 
 	for {
-		connErr := conn.WriteJSON(newGameStateResponse(gameState, p))
-		if connErr != nil {
-			break
+		select {
+		// Game state changed event
+		case gameState = <-eventListener:
+			connErr := conn.WriteJSON(newGameStateResponse(gameState, p))
+			if connErr != nil {
+				log.Println("Connection error with user:", user.Username)
+				return nil
+			}
+		// Ping tick event
+		case <-ticker.C:
+			conn.SetReadDeadline(time.Now().Add(pongWait))
+			err = conn.WriteMessage(websocket.PingMessage, nil)
+			if err != nil {
+				log.Println("User did not respond pong:", user.Username)
+				return nil
+			}
 		}
-		gameState = <-eventListener
 	}
-
-	stopListening(gameState.ID, &eventListener)
-	log.Println("User stopped listening:", user.Username, "game:", gameState.ID)
-	return nil
 }
 
 func newGameStateResponse(gs *cah.GameState, player *cah.Player) *gameStateResponse {
