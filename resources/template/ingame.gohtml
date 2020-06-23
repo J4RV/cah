@@ -9,16 +9,30 @@
         <p class="err-msg">{{$flash}}</p>
       {{end}}
       <p class="err-msg" v-for="flash in vueFlashes">${flash}</p>
-      <h4>{{.Game.Name}}</h4>
+      <h4>${tip}</h4>
       <div id="black-card" class="card black-card in-table">
         <p>${gamestate.blackCardInPlay.text}</p>
         <p class="card-expansion-text">${gamestate.blackCardInPlay.expansion}</p>
       </div>
+      <div id="sinner-plays">
+        <div v-for="(sinnerplay) in gamestate.sinnerPlays"
+          :data-sinner-play-id="sinnerplay.id"
+          class="sinner-play"
+          onclick="sinnerPlayClick(this)"
+        >
+          <div v-for="card in sinnerplay.whiteCards" class="card white-card in-table">
+            <p>${card.text}</p>
+            <p class="card-expansion-text">${card.expansion}</p>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="players-item">
+      <p>Room: {{.Game.Name}}</p>
       <ol>
         <li class="player-item floating" v-for="player in gamestate.players">
           ${player.name}
+          <span v-if="player.id == gamestate.myPlayer.id"> (It's you!)</span>
           <div>
             <small v-if="player.id == gamestate.currentCzarID"><b>Czar</b></small>
             <small v-else-if="player.whiteCardsInPlay">Waiting</small>
@@ -27,13 +41,10 @@
         </li>
       </ol>
     </div>
-    <div id="tip-item">
-      <h6>${tip}</h6>
-    </div>
     <div id="hand-item">
       <div v-for="(card, index) in gamestate.myPlayer.hand"
         :data-card-index="index"
-        class="card white-card floating"      
+        class="card white-card floating"
         onclick="whiteCardClick(this)"
       >
         <p>${card.text}</p>
@@ -41,7 +52,7 @@
       </div>
     </div>
   </div>
-  <button class="confirm-button primary-button">✓</button>
+  <button class="confirm-button primary-button" onclick="onConfirm()">✓</button>
 </div>
 <div v-else>
   Loading...
@@ -53,6 +64,7 @@
 {{define "script"}}
 <script>
 const MAX_RETRIES_ON_SOCKET_CLOSED = 4
+const VUE_FLASH_STAY_MS = 5000
 
 var app = new Vue({
   el: '.main',
@@ -60,7 +72,6 @@ var app = new Vue({
   data: {
     gamestate: undefined,
     vueFlashes: [],
-    selection: {},
   },
   updated: randomRotateCards,
 })
@@ -90,23 +101,85 @@ function startWebsocket(retries) {
   }
 
   sock.onerror = (err) => {
-    app.vueFlashes.push("Server Connection error: " + err.message)
+    pushVueError("Server Connection error: " + err.message)
     sock.close()
   }
 }
 
 function getPlayerTip(state) {
-  return "Play one card"
+  if (state.phase === "Czar is choosing winner") {
+    return state.myPlayer.id === state.currentCzarID ? 
+      "Choose the winner" : "The Czar is choosing the winner"
+  }
+  if (state.phase === "Sinners playing their cards") {
+    if (state.myPlayer.id === state.currentCzarID) {
+      return "Wait until all sinners play their cards"
+    }
+    let blanks = state.blackCardInPlay.blanks
+    if (blanks === 1) {
+      return "Play one card"
+    }
+    return `Play ${blanks} cards`
+  }
+  return ""
 }
 
 function whiteCardClick(card) {
   let cardIndex = card.dataset.cardIndex
-  console.log(cardIndex)
-  if (app.selection[cardIndex]) {
-    delete app.selection[cardIndex]
-  } else {
-    app.selection[cardIndex] = true
+  card.classList.toggle("selected")
+  card.classList.toggle("glowing")
+}
+
+function sinnerPlayClick(elem) {
+  let state = app.gamestate
+  if (!state.myPlayer.id === state.currentCzarID) {
+    return
   }
+  let sinnerPlayId = Number(elem.dataset.sinnerPlayId)
+  let data = {winner: sinnerPlayId}
+  doPlayerAction("/api/game/{{.Game.ID}}/state/choose-winner", data)
+}
+
+function onConfirm() {
+  let data = {cardIndexes: getSelectedCardIndexes()}
+  doPlayerAction("/api/game/{{.Game.ID}}/state/play-cards", data)
+}
+
+function doPlayerAction(url, data) {
+  let body = JSON.stringify(data)
+  fetch(url, {
+      method: "POST",
+      body: body,
+      headers:{
+        "Content-Type": "application/json"
+      },
+  })
+  .then(res => {
+    if (!res.ok) {
+      res.text().then(pushVueError)
+      return
+    }
+    clearSelections()
+  })
+  .catch(pushVueError)
+}
+
+function pushVueError(error) {
+  console.error(error)
+  app.vueFlashes.push(error)
+  setTimeout(() => app.vueFlashes.shift(), VUE_FLASH_STAY_MS)
+}
+
+function getSelectedCardIndexes() {
+  return [...document.querySelectorAll(".selected")]
+    .map(elem => Number(elem.dataset.cardIndex))
+}
+
+function clearSelections() {
+  document.querySelectorAll(".selected").forEach(elem => {
+    elem.classList.toggle("selected")
+    elem.classList.toggle("glowing")
+  })
 }
 
 startWebsocket(MAX_RETRIES_ON_SOCKET_CLOSED)
@@ -118,39 +191,34 @@ startWebsocket(MAX_RETRIES_ON_SOCKET_CLOSED)
 .game-grid {
   padding: 1rem;
   display: grid;
-  grid-template-columns: auto auto;
-  grid-template-rows: auto auto;
+  grid-template-columns: 80% auto;
 }
 
 #table-item {
   grid-column: 1 / span 1;
   grid-row: 1 / span 1;
-  border: 1px solid;
-}
-
-#tip-item {
-  grid-column: 1 / span 1;
-  grid-row: 2 / span 1;
-  border: 1px solid;
+  //border: 1px solid;
 }
 
 #players-item {
   grid-column: 2 / span 1;
   grid-row: 1 / span 3;
-  border: 1px solid;
+  //border: 1px solid;
 }
 
 #hand-item {
   grid-column: 1 / span 1;
   grid-row: 3 / span 1;
   display: flex;
-  justify-content: space-evenly;
   flex-wrap: wrap;
-  border: 1px solid;
+  background: var(--color-black);
+  padding: 8px;
+  border-radius: 6px;
+  //border: 1px solid;
 }
 
 .card {
-  margin: 1rem 0.5rem;
+  margin: 8px;
   display: inline-block;
 }
 
@@ -162,6 +230,17 @@ startWebsocket(MAX_RETRIES_ON_SOCKET_CLOSED)
   border-radius: 4px;
   text-align: left;
   min-width: 6rem;
+}
+
+#sinner-plays {
+  display: flex;
+  justify-content: center;
+}
+
+.sinner-play {
+  margin: 0 8px 8px 8px;
+  border: 1px solid;
+  border-radius: 4px;
 }
 
 .confirm-button {

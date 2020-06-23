@@ -152,15 +152,16 @@ func sinnerPlaysFromGame(gs *cah.GameState) []sinnerPlay {
 	if !usecase.GameState.AllSinnersPlayedTheirCards(gs) {
 		return []sinnerPlay{}
 	}
-	ret := make([]sinnerPlay, len(gs.Players))
+	var ret []sinnerPlay
 	for i, p := range gs.Players {
 		if gs.IsCurrCzar(p.User) {
+			i--
 			continue
 		}
-		ret[i] = sinnerPlay{
+		ret = append(ret, sinnerPlay{
 			ID:         p.User.ID,
 			WhiteCards: dereferenceWhiteCards(p.WhiteCardsInPlay),
-		}
+		})
 	}
 	rand.Shuffle(len(ret), func(i, j int) {
 		ret[i], ret[j] = ret[j], ret[i]

@@ -118,7 +118,7 @@ type srvHandler func(http.ResponseWriter, *http.Request) error
 func (fn srvHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if err := fn(w, req); err != nil {
 		logError.Printf("trying to ServeHTTP: %s", err)
-		http.Error(w, err.Error(), http.StatusPreconditionFailed)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 }
 
