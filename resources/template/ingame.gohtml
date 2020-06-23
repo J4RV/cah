@@ -3,12 +3,14 @@
 
 <div class="main">
 <div class="ingame" v-if="gamestate">
+
+  {{range $flash := .Flashes}}
+    <p class="err-msg">{{$flash}}</p>
+  {{end}}
+  <p class="err-msg" v-for="flash in vueFlashes">${flash}</p>
+
   <div class="game-grid">
     <div id="table-item">
-      {{range $flash := .Flashes}}
-        <p class="err-msg">{{$flash}}</p>
-      {{end}}
-      <p class="err-msg" v-for="flash in vueFlashes">${flash}</p>
       <h4>${tip}</h4>
       <div id="black-card" class="card black-card in-table">
         <p>${gamestate.blackCardInPlay.text}</p>
@@ -94,7 +96,12 @@ function startWebsocket(retries) {
 
     // data type: gameStateResponse
     let gamestate = JSON.parse(e.data)
-    console.log(gamestate)
+    {{if devMode}}console.log(gamestate){{end}}
+
+    if (gamestate.phase === "Finished") {
+      document.location = "/games/{{.Game.ID}}/final-stats"
+    }
+
     app.gamestate = gamestate
     app.tip = getPlayerTip(gamestate)
   }

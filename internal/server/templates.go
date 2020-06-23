@@ -23,6 +23,7 @@ const (
 	createGamePageTmpl tmplID = "Create game"
 	lobbyPageTmpl      tmplID = "Lobby"
 	ingamePageTmpl     tmplID = "Ingame"
+	finalStatsPageTmpl tmplID = "Final stats"
 	notFoundPageTmpl   tmplID = "Not found"
 )
 
@@ -50,6 +51,11 @@ var templateFiles = map[tmplID][]string{
 		"ingame.gohtml",
 		"components/logged-header.gohtml",
 		"components/import-vue.gohtml",
+	}, tmplBase...),
+
+	finalStatsPageTmpl: append([]string{
+		"final-stats.gohtml",
+		"components/logged-header.gohtml",
 	}, tmplBase...),
 
 	createGamePageTmpl: append([]string{

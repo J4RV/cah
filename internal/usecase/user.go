@@ -39,7 +39,7 @@ func (uc userController) Register(name, pass string) (cah.User, error) {
 	return uc.store.Create(name, passHash)
 }
 
-func (uc userController) ByID(id int) (cah.User, bool) {
+func (uc userController) ByID(id uint) (cah.User, bool) {
 	u, err := uc.store.ByID(id)
 	return u, err == nil
 }

@@ -42,11 +42,10 @@ func TestCorrectPass(t *testing.T) {
 func TestUserByID(t *testing.T) {
 	usecase := getUserUsecase()
 	var table = []struct {
-		id    int
+		id    uint
 		name  string
 		found bool
 	}{
-		{-1, "", false},
 		{0, "", false},
 		{1, "Red", true},
 		{3, "Blue", true},

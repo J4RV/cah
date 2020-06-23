@@ -1,7 +1,10 @@
 package sqlite
 
 import (
+	"errors"
+
 	cah "github.com/j4rv/cah/internal/model"
+	"gorm.io/gorm"
 )
 
 type userStore struct{}
@@ -11,28 +14,31 @@ func NewUserStore(ds cah.DataStore) *userStore {
 }
 
 func (store *userStore) Create(username string, password []byte) (cah.User, error) {
-	var user cah.User
-	_, err := db.Exec(`INSERT INTO user (username, password) VALUES (?, ?)`,
-		username, password)
-	if err != nil {
-		return user, err
+	user := cah.User{Username: username, Password: password}
+	if username == "" || len(password) == 0 {
+		return user, errors.New("Username and password must not be empty")
 	}
-	err = db.Get(&user, `SELECT * FROM user WHERE user = last_insert_rowid()`)
-	return user, err
+	if len(username) > 36 {
+		return user, errors.New("Username too long, must not be greater than 36")
+	}
+	tx := db.Create(&user)
+	return user, tx.Error
 }
 
-func (store *userStore) ByID(id int) (cah.User, error) {
+func (store *userStore) ByID(id uint) (cah.User, error) {
 	var user cah.User
-	if err := db.Get(&user, "SELECT * FROM user WHERE user = ?", id); err != nil {
-		return user, err
+	if id == 0 {
+		return user, errNotFound
 	}
-	return user, nil
+	tx := db.First(&user, cah.User{Model: gorm.Model{ID: id}})
+	return user, tx.Error
 }
 
 func (store *userStore) ByName(name string) (cah.User, error) {
 	var user cah.User
-	if err := db.Get(&user, "SELECT * FROM user WHERE username = ?", name); err != nil {
-		return user, err
+	if name == "" {
+		return user, errNotFound
 	}
-	return user, nil
+	tx := db.First(&user, cah.User{Username: name})
+	return user, tx.Error
 }

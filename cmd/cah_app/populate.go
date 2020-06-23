@@ -66,7 +66,7 @@ func createTestGames(usecase cah.Usecases) {
 func getTestUsers(usecase cah.Usecases) []cah.User {
 	users := make([]cah.User, 4)
 	for i := 0; i < 4; i++ {
-		u, _ := usecase.User.ByID(i + 1)
+		u, _ := usecase.User.ByID(uint(i + 1))
 		users[i] = u
 	}
 	return users

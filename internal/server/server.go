@@ -89,6 +89,7 @@ func setTemplateRouterHandlers(r *mux.Router) {
 	r.Handle(gamesPath+"/create", loggedInHandler(createGamePageHandler))
 	r.Handle(gamesPath+"/{gameID}", gameHandler(lobbyPageHandler))
 	r.Handle(gamesPath+"/{gameID}/ingame", gameHandler(ingamePageHandler))
+	r.Handle(gamesPath+"/{gameID}/final-stats", gameHandler(finalStatsPageHandler))
 }
 
 // StartServer starts the server using the provided router

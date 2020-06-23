@@ -126,7 +126,7 @@ func userFromSession(w http.ResponseWriter, req *http.Request) (cah.User, error)
 	if !ok {
 		return cah.User{}, fmt.Errorf("Tried to get user from session without an id")
 	}
-	id, ok := val.(int)
+	id, ok := val.(uint)
 	if !ok {
 		logError.Printf("session with non int id value: '%v'", session.Values)
 		return cah.User{}, fmt.Errorf("Session with non int id value")

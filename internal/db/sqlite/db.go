@@ -1,22 +1,29 @@
 package sqlite
 
 import (
-	"github.com/jmoiron/sqlx"
+	"errors"
 
-	// driver for sqlite3
-	_ "github.com/mattn/go-sqlite3"
+	cah "github.com/j4rv/cah/internal/model"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
-var db *sqlx.DB
+var db *gorm.DB
+
+var errNotFound = errors.New("Not found")
 
 func InitDB(dbFileName string) {
-	db = sqlx.MustOpen("sqlite3", dbFileName)
-	if db.Ping() != nil {
-		panic("DB did not answer ping")
+	var err error
+	db, err = gorm.Open(sqlite.Open(dbFileName), nil)
+	if err != nil {
+		panic(err)
 	}
 	CreateTables()
 }
 
 func CreateTables() {
-	createTableUser()
+	err := db.AutoMigrate(&cah.User{})
+	if err != nil {
+		panic(err)
+	}
 }
