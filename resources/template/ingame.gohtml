@@ -86,7 +86,7 @@ Vue.component("player-point", {
 
 function startWebsocket(retries) {
   const sock = new WebSocket(relativeWebSocketUrl("/api/game/{{.Game.ID}}/state/websocket"))
-  window.onbeforeunload = e => sock.close()
+  window.onbeforeunload = e => sock.close(1001)
 
   sock.onmessage = (e) => {
     retries = MAX_RETRIES_ON_SOCKET_CLOSED

@@ -51,16 +51,17 @@ type gameStateResponse struct {
 	MaxRounds       int            `json:"maxRounds"`
 }
 
-var gameStateListeners = make(map[int][]*chan *cah.GameState)
+var gameStateListeners = make(map[int][]chan *cah.GameState)
 
-func startListening(gsID int, cb *chan *cah.GameState) {
+func startListening(gsID int, cb chan *cah.GameState) {
 	gameStateListeners[gsID] = append(gameStateListeners[gsID], cb)
 }
 
-func stopListening(gsID int, cb *chan *cah.GameState) {
-	var cbRemoved []*chan *cah.GameState
+func stopListening(gsID int, cb chan *cah.GameState) {
+	var cbRemoved []chan *cah.GameState
 	for _, listener := range gameStateListeners[gsID] {
 		if cb == listener {
+			close(cb)
 			continue
 		}
 		cbRemoved = append(cbRemoved, listener)
@@ -70,7 +71,7 @@ func stopListening(gsID int, cb *chan *cah.GameState) {
 
 func gameStateUpdated(gs *cah.GameState) {
 	for i := range gameStateListeners[gs.ID] {
-		*gameStateListeners[gs.ID][i] <- gs
+		gameStateListeners[gs.ID][i] <- gs
 	}
 }
 
@@ -80,7 +81,7 @@ var upgrader = websocket.Upgrader{
 
 const (
 	writeWait  = 10 * time.Second
-	pingPeriod = 30 * time.Second
+	pingPeriod = 20 * time.Second // Must be less than pongWait.
 	pongWait   = 60 * time.Second
 )
 
@@ -100,40 +101,77 @@ func gameStateWebsocket(game cah.Game, user cah.User, w http.ResponseWriter, req
 		return
 	}
 
-	ticker := time.NewTicker(pingPeriod)
-	eventListener := make(chan *cah.GameState)
-	startListening(gameState.ID, &eventListener)
+	gsEventChan := make(chan *cah.GameState)
+	startListening(gameState.ID, gsEventChan)
 	log.Printf("[Game: %s][User: %s] Started listening", game.Name, user.Username)
 
 	defer func() {
-		ticker.Stop()
 		conn.Close()
-		stopListening(gameState.ID, &eventListener)
+		stopListening(gameState.ID, gsEventChan)
 		log.Printf("[Game: %s][User: %s] Stopped listening", game.Name, user.Username)
 	}()
 
 	// Start by returning the current state
 	conn.WriteJSON(newGameStateResponse(gameState, p))
+	pingPongChan := webSocketPingPongs(conn)
 
 	for {
 		select {
-		// Game state changed event
-		case gameState = <-eventListener:
+		case gameState = <-gsEventChan:
+			conn.SetWriteDeadline(time.Now().Add(writeWait))
 			connErr := conn.WriteJSON(newGameStateResponse(gameState, p))
 			if connErr != nil {
-				log.Println("Connection error with user:", user.Username)
 				return nil
 			}
-		// Ping tick event
-		case <-ticker.C:
-			conn.SetReadDeadline(time.Now().Add(pongWait))
-			err = conn.WriteMessage(websocket.PingMessage, nil)
-			if err != nil {
-				log.Println("User did not respond pong:", user.Username)
-				return nil
-			}
+		case <-pingPongChan:
+			return nil
 		}
 	}
+}
+
+func webSocketPingPongs(conn *websocket.Conn) chan struct{} {
+	res := make(chan struct{})
+
+	// Pong reader
+	go func() {
+		conn.SetReadDeadline(time.Now().Add(pongWait))
+		conn.SetPongHandler(func(string) error {
+			conn.SetReadDeadline(time.Now().Add(pongWait))
+			return nil
+		})
+
+		for {
+			_, _, err := conn.ReadMessage()
+			if err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					log.Printf("Unexpected websocket close: %v", err)
+				}
+				break
+			}
+		}
+
+		conn.Close()
+	}()
+
+	// Ping writer
+	go func() {
+		pingTicker := time.NewTicker(pingPeriod)
+
+		for {
+			<-pingTicker.C
+			conn.SetWriteDeadline(time.Now().Add(writeWait))
+			err := conn.WriteMessage(websocket.PingMessage, nil)
+			if err != nil {
+				break
+			}
+		}
+
+		conn.Close()
+		pingTicker.Stop()
+		res <- struct{}{}
+	}()
+
+	return res
 }
 
 func newGameStateResponse(gs *cah.GameState, player *cah.Player) *gameStateResponse {
