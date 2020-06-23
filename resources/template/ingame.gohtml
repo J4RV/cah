@@ -38,6 +38,10 @@
             <small v-else-if="player.whiteCardsInPlay">Waiting</small>
             <small v-else>Playing</small>
           </div>
+          <player-point
+            v-for="point in player.points"
+            v-bind:card="point"
+          ></player-point>
         </li>
       </ol>
     </div>
@@ -68,12 +72,16 @@ const VUE_FLASH_STAY_MS = 5000
 
 var app = new Vue({
   el: '.main',
-  delimiters: VUE_DELIMITERS,
   data: {
     gamestate: undefined,
     vueFlashes: [],
   },
   updated: randomRotateCards,
+})
+
+Vue.component("player-point", {
+  props: ["card"],
+  template: "<div class='player-point' :title='card.text'></div>"
 })
 
 function startWebsocket(retries) {
@@ -132,7 +140,7 @@ function whiteCardClick(card) {
 
 function sinnerPlayClick(elem) {
   let state = app.gamestate
-  if (!state.myPlayer.id === state.currentCzarID) {
+  if (state.myPlayer.id !== state.currentCzarID) {
     return
   }
   let sinnerPlayId = Number(elem.dataset.sinnerPlayId)
@@ -232,15 +240,23 @@ startWebsocket(MAX_RETRIES_ON_SOCKET_CLOSED)
   min-width: 6rem;
 }
 
+.player-point {
+  width: 1rem;
+  height: 1.2rem;
+  border-radius: 3px;
+  background: var(--color-bg);
+  display: inline-block;
+  margin: 4px 4px 0 0;
+}
+
 #sinner-plays {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .sinner-play {
-  margin: 0 8px 8px 8px;
-  border: 1px solid;
-  border-radius: 4px;
+  margin: 1.5rem;
 }
 
 .confirm-button {
@@ -257,12 +273,18 @@ startWebsocket(MAX_RETRIES_ON_SOCKET_CLOSED)
 @media (max-width: 749px) {
   #players-item {
     grid-row: 1 / span 1;
+    grid-column: 1 / span 2;
+    margin-bottom: 1rem;
+    margin-left: 4rem;
+    margin-right: 4rem;
   }
-  #tip-item {
+  #table-item {
+    grid-row: 2 / span 1;
     grid-column: 1 / span 2;
   }
   #hand-item {
     grid-column: 1 / span 2;
+    justify-content: space-evenly;
   }
 }
 </style>
