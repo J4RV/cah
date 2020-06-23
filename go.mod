@@ -11,4 +11,5 @@ require (
 	github.com/mattn/go-sqlite3 v1.10.1-0.20190104161712-3fa1c550ffa6
 	github.com/stretchr/testify v1.3.1-0.20190109162356-363ebb24d041
 	golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc
+	gopkg.in/yaml.v2 v2.3.0
 )

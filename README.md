@@ -1,16 +1,16 @@
 ![Go](https://github.com/j4rv/cah/workflows/Go/badge.svg)
 
-### EZ install to raspberry pi
+### Run (dev mode)
+
+In the repo's root directory:
+
+`go run ./cmd/... -dev -port 8080`
+
+## Install and run (prod mode)
+
+In the repo's root directory:
 
 ```
-go get -v github.com/j4rv/cah/...
-go install github.com/j4rv/cah/cah_app
-```
-
-Configure the SESSIONS_KEY env var with a random string (TODO: change this)
-
-To execute, on a directory that has an 'expansions' folder in it:  
-
-```
-sudo -E /home/pi/go/bin/cah_app
+go install ./cmd/...
+cah_app
 ```

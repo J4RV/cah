@@ -1,0 +1,4 @@
+templatePath: ./resources/template/
+staticPath: ./resources/static/
+expansionsPath: ./resources/expansions/
+sqliteDBPath: ./resources/db.sqlite3

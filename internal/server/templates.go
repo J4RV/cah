@@ -8,14 +8,11 @@ import (
 
 type tmplID string
 
-const tmplDir = "web/template/"
-const tmplComponentsDir = tmplDir + "components/"
-
 var tmplBase = []string{
-	tmplDir + "layout/base.gohtml",
-	tmplDir + "layout/base-style.gohtml",
-	tmplDir + "layout/base-js.gohtml",
-	tmplDir + "layout/css-reset.gohtml",
+	config.TemplatePath + "components/layout/base.gohtml",
+	config.TemplatePath + "components/layout/base-style.gohtml",
+	config.TemplatePath + "components/layout/base-js.gohtml",
+	config.TemplatePath + "components/layout/css-reset.gohtml",
 }
 
 // Template definitions
@@ -29,13 +26,14 @@ const (
 	notFoundPageTmpl   tmplID = "Not found"
 )
 
+// FIXME reduce verbosity
 var templateFiles = map[tmplID][]string{
-	loginPageTmpl:      append(tmplBase, tmplDir+"login.gohtml"),
-	notFoundPageTmpl:   append(tmplBase, tmplDir+"404.gohtml"),
-	gamesPageTmpl:      append(tmplBase, tmplDir+"games.gohtml", tmplComponentsDir+"logged-header.gohtml"),
-	lobbyPageTmpl:      append(tmplBase, tmplDir+"lobby.gohtml", tmplComponentsDir+"logged-header.gohtml", tmplComponentsDir+"import-vue.gohtml"),
-	ingamePageTmpl:     append(tmplBase, tmplDir+"ingame.gohtml", tmplComponentsDir+"logged-header.gohtml", tmplComponentsDir+"import-vue.gohtml"),
-	createGamePageTmpl: append(tmplBase, tmplDir+"create-game.gohtml", tmplComponentsDir+"logged-header.gohtml"),
+	loginPageTmpl:      append(tmplBase, config.TemplatePath+"login.gohtml"),
+	notFoundPageTmpl:   append(tmplBase, config.TemplatePath+"404.gohtml"),
+	gamesPageTmpl:      append(tmplBase, config.TemplatePath+"games.gohtml", config.TemplatePath+"components/logged-header.gohtml"),
+	lobbyPageTmpl:      append(tmplBase, config.TemplatePath+"lobby.gohtml", config.TemplatePath+"components/logged-header.gohtml", config.TemplatePath+"components/import-vue.gohtml"),
+	ingamePageTmpl:     append(tmplBase, config.TemplatePath+"ingame.gohtml", config.TemplatePath+"components/logged-header.gohtml", config.TemplatePath+"components/import-vue.gohtml"),
+	createGamePageTmpl: append(tmplBase, config.TemplatePath+"create-game.gohtml", config.TemplatePath+"components/logged-header.gohtml"),
 }
 
 // Functions to be called from outside this file to render the templates:

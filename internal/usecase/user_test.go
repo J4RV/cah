@@ -22,11 +22,9 @@ func getUserUsecase() cah.UserUsecases {
 }
 
 func TestPassHashNotFailing(t *testing.T) {
-	hash, err := userPassHash(commonPass)
+	_, err := userPassHash(commonPass)
 	if err != nil {
 		t.Error("generate password hash failed:", err)
-	} else {
-		t.Log("Hash:", string(hash))
 	}
 }
 

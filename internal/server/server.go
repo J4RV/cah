@@ -17,9 +17,10 @@ var port, secureport int
 var usingTLS bool
 var devMode bool
 var serverCert, serverPK string
-var publicDir string
 
+var config cah.Config
 var usecase cah.Usecases
+
 var logError = log.New(os.Stderr, "[ERROR]", log.LstdFlags)
 
 var upgrader = websocket.Upgrader{
@@ -49,12 +50,12 @@ func parseFlags() {
 	flag.IntVar(&port, "port", 80, "Server port for serving HTTP")
 	flag.IntVar(&secureport, "secureport", 443, "Server port for serving HTTPS")
 	flag.BoolVar(&devMode, "dev", false, "Activates development mode")
-	flag.StringVar(&publicDir, "dir", "web/static", "the directory to serve files from. Defaults to 'web/static'")
 	flag.Parse()
 }
 
 // Start creates and starts the server with the provided usecases
-func Start(uc cah.Usecases) {
+func Start(cfg cah.Config, uc cah.Usecases) {
+	config = cfg
 	usecase = uc
 
 	router := mux.NewRouter()
@@ -65,7 +66,7 @@ func Start(uc cah.Usecases) {
 	setTemplateRouterHandlers(router)
 
 	//Static files handler
-	fs := http.FileServer(http.Dir(publicDir))
+	fs := http.FileServer(http.Dir(config.StaticPath))
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 	// Known files:
 	router.PathPrefix("/favicon.").Handler(fs)
