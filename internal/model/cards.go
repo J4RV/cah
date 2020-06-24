@@ -1,10 +1,6 @@
 package cah
 
-import (
-	"io"
-
-	"gorm.io/gorm"
-)
+import "io"
 
 type CardStore interface {
 	CreateWhite(text, expansion string) error
@@ -27,15 +23,14 @@ type CardUsecases interface {
 }
 
 type WhiteCard struct {
-	gorm.Model
-	Text      string `json:"text"`
-	Expansion string `json:"expansion"`
+	ID        int    `json:"-" db:"white_card"`
+	Text      string `json:"text" db:"text"`
+	Expansion string `json:"expansion" db:"expansion"`
 }
 
 type BlackCard struct {
-	gorm.Model
-	ID        int    `json:"-"`
-	Text      string `json:"text"`
-	Expansion string `json:"expansion"`
-	Blanks    int    `json:"blanks"`
+	ID        int    `json:"-" db:"black_card"`
+	Text      string `json:"text" db:"text"`
+	Expansion string `json:"expansion" db:"expansion"`
+	Blanks    int    `json:"blanks" db:"blanks"`
 }
