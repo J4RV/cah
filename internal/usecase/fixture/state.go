@@ -12,7 +12,7 @@ func getStateFixture(playernames []string) cah.GameState {
 	return cah.GameState{
 		BlackDeck:   getBlackCardsFixture(20),
 		WhiteDeck:   getWhiteCardsFixture(40),
-		DiscardPile: []*cah.WhiteCard{},
+		DiscardPile: []cah.WhiteCard{},
 		Players:     p,
 	}
 }

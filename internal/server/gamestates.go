@@ -180,7 +180,7 @@ func newGameStateResponse(gs *cah.GameState, player *cah.Player) *gameStateRespo
 		Phase:           gs.Phase.String(),
 		Players:         playersInfoFromGame(gs),
 		CurrCzarID:      gs.Players[gs.CurrCzarIndex].User.ID,
-		BlackCardInPlay: *gs.BlackCardInPlay,
+		BlackCardInPlay: gs.BlackCardInPlay,
 		BlackCardsLeft:  len(gs.BlackDeck),
 		WhiteCardsLeft:  len(gs.WhiteDeck),
 		SinnerPlays:     sinnerPlaysFromGame(gs),
@@ -204,7 +204,7 @@ func newPlayerInfo(p cah.Player) playerInfo {
 		Name:             p.User.Username,
 		HandSize:         len(p.Hand),
 		WhiteCardsInPlay: len(p.WhiteCardsInPlay),
-		Points:           dereferenceBlackCards(p.Points),
+		Points:           p.Points,
 	}
 }
 
@@ -212,8 +212,8 @@ func newFullPlayerInfo(player cah.Player) fullPlayerInfo {
 	return fullPlayerInfo{
 		ID:               player.User.ID,
 		Name:             player.User.Username,
-		Hand:             dereferenceWhiteCards(player.Hand),
-		WhiteCardsInPlay: dereferenceWhiteCards(player.WhiteCardsInPlay),
+		Hand:             player.Hand,
+		WhiteCardsInPlay: player.WhiteCardsInPlay,
 	}
 }
 
@@ -229,7 +229,7 @@ func sinnerPlaysFromGame(gs *cah.GameState) []sinnerPlay {
 		}
 		ret = append(ret, sinnerPlay{
 			ID:         p.User.ID,
-			WhiteCards: dereferenceWhiteCards(p.WhiteCardsInPlay),
+			WhiteCards: p.WhiteCardsInPlay,
 		})
 	}
 	rand.Shuffle(len(ret), func(i, j int) {

@@ -10,10 +10,10 @@ import (
 
 func TestPlayer_ExtractCardFromHand(t *testing.T) {
 	p := Player{}
-	c1 := &WhiteCard{Text: "A"}
-	c2 := &WhiteCard{Text: "B"}
-	c3 := &WhiteCard{Text: "C"}
-	p.Hand = []*WhiteCard{c1, c2, c3}
+	c1 := WhiteCard{Text: "A"}
+	c2 := WhiteCard{Text: "B"}
+	c3 := WhiteCard{Text: "C"}
+	p.Hand = []WhiteCard{c1, c2, c3}
 
 	_, err := p.ExtractCardFromHand(-1)
 	if err == nil {
@@ -29,7 +29,7 @@ func TestPlayer_ExtractCardFromHand(t *testing.T) {
 	assert.Equal(t, c.Text, "B", "Unexpected text in extracted hand")
 	assert.Equalf(t, err, nil, "Unexpected error %v", err)
 	assert.Equalf(t, len(p.Hand), 2, "Hand size did not get reduced, hand: %s, len: ", p.Hand)
-	expectedResultHand := []*WhiteCard{c1, c3}
+	expectedResultHand := []WhiteCard{c1, c3}
 
 	for i := range p.Hand {
 		assert.Equalf(t, p.Hand[i], expectedResultHand[i], "Unexpected hand card at position %d", i)
@@ -59,10 +59,10 @@ func TestPlayer_ExtractCardsFromHand(t *testing.T) {
 	}
 }
 
-func getWhiteCardsFixture(amount int) []*WhiteCard {
-	ret := make([]*WhiteCard, amount)
+func getWhiteCardsFixture(amount int) []WhiteCard {
+	ret := make([]WhiteCard, amount)
 	for i := 0; i < amount; i++ {
-		ret[i] = &WhiteCard{Text: fmt.Sprintf("White card fixture (%d)", i)}
+		ret[i] = WhiteCard{Text: fmt.Sprintf("White card fixture (%d)", i)}
 	}
 	return ret
 }

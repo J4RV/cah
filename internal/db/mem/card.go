@@ -11,13 +11,13 @@ import (
 
 type cardMemStore struct {
 	abstractMemStore
-	whiteCards map[string][]*cah.WhiteCard
-	blackCards map[string][]*cah.BlackCard
+	whiteCards map[string][]cah.WhiteCard
+	blackCards map[string][]cah.BlackCard
 }
 
 var cardStore = &cardMemStore{
-	whiteCards: map[string][]*cah.WhiteCard{},
-	blackCards: map[string][]*cah.BlackCard{},
+	whiteCards: map[string][]cah.WhiteCard{},
+	blackCards: map[string][]cah.BlackCard{},
 }
 
 // GetCardStore returns the global card store
@@ -37,7 +37,7 @@ func (store *cardMemStore) CreateWhite(t, e string) error {
 	}
 	store.Lock()
 	defer store.Unlock()
-	c := &cah.WhiteCard{}
+	c := cah.WhiteCard{}
 	c.ID = store.nextID()
 	c.Text = t
 	c.Expansion = e
@@ -63,7 +63,7 @@ func (store *cardMemStore) CreateBlack(t, e string, blanks int) error {
 	}
 	store.Lock()
 	defer store.Unlock()
-	c := &cah.BlackCard{}
+	c := cah.BlackCard{}
 	c.ID = store.nextID()
 	c.Text = t
 	c.Expansion = e
@@ -72,10 +72,10 @@ func (store *cardMemStore) CreateBlack(t, e string, blanks int) error {
 	return nil
 }
 
-func (store *cardMemStore) AllWhites() ([]*cah.WhiteCard, error) {
+func (store *cardMemStore) AllWhites() ([]cah.WhiteCard, error) {
 	store.Lock()
 	defer store.Unlock()
-	ret := []*cah.WhiteCard{}
+	ret := []cah.WhiteCard{}
 	for _, whiteCards := range store.whiteCards {
 		for _, whiteCard := range whiteCards {
 			ret = append(ret, whiteCard)
@@ -84,10 +84,10 @@ func (store *cardMemStore) AllWhites() ([]*cah.WhiteCard, error) {
 	return ret, nil
 }
 
-func (store *cardMemStore) AllBlacks() ([]*cah.BlackCard, error) {
+func (store *cardMemStore) AllBlacks() ([]cah.BlackCard, error) {
 	store.Lock()
 	defer store.Unlock()
-	ret := []*cah.BlackCard{}
+	ret := []cah.BlackCard{}
 	for _, blackCards := range store.blackCards {
 		for _, blackCard := range blackCards {
 			ret = append(ret, blackCard)
@@ -96,10 +96,10 @@ func (store *cardMemStore) AllBlacks() ([]*cah.BlackCard, error) {
 	return ret, nil
 }
 
-func (store *cardMemStore) WhitesByExpansion(exps ...string) ([]*cah.WhiteCard, error) {
+func (store *cardMemStore) WhitesByExpansion(exps ...string) ([]cah.WhiteCard, error) {
 	store.Lock()
 	defer store.Unlock()
-	ret := []*cah.WhiteCard{}
+	ret := []cah.WhiteCard{}
 	for _, exp := range exps {
 		cards, ok := store.whiteCards[exp]
 		if !ok {
@@ -111,10 +111,10 @@ func (store *cardMemStore) WhitesByExpansion(exps ...string) ([]*cah.WhiteCard, 
 	return ret, nil
 }
 
-func (store *cardMemStore) BlacksByExpansion(exps ...string) ([]*cah.BlackCard, error) {
+func (store *cardMemStore) BlacksByExpansion(exps ...string) ([]cah.BlackCard, error) {
 	store.Lock()
 	defer store.Unlock()
-	ret := []*cah.BlackCard{}
+	ret := []cah.BlackCard{}
 	for _, exp := range exps {
 		cards, ok := store.blackCards[exp]
 		if !ok {

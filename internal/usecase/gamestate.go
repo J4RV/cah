@@ -10,7 +10,7 @@ import (
 	cah "github.com/j4rv/cah/internal/model"
 )
 
-var nilBlackCard = &cah.BlackCard{}
+var nilBlackCard = cah.BlackCard{}
 
 type errorEmptyBlackDeck struct{}
 
@@ -32,9 +32,9 @@ func (control stateController) Create() *cah.GameState {
 	ret := &cah.GameState{
 		Players:         []*cah.Player{},
 		HandSize:        10,
-		DiscardPile:     []*cah.WhiteCard{},
-		WhiteDeck:       []*cah.WhiteCard{},
-		BlackDeck:       []*cah.BlackCard{},
+		DiscardPile:     []cah.WhiteCard{},
+		WhiteDeck:       []cah.WhiteCard{},
+		BlackDeck:       []cah.BlackCard{},
 		BlackCardInPlay: nilBlackCard,
 	}
 	ret, err := control.store.Create(ret)
@@ -93,7 +93,7 @@ func (control stateController) GiveBlackCardToWinner(wID int, g *cah.GameState) 
 	}
 	g.BlackCardInPlay = nilBlackCard
 	for _, p := range g.Players {
-		p.WhiteCardsInPlay = []*cah.WhiteCard{}
+		p.WhiteCardsInPlay = []cah.WhiteCard{}
 	}
 	_ = control.nextCzar(g)
 	err := putBlackCardInPlay(g)

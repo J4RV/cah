@@ -26,18 +26,18 @@ func (Options) HandSize(size int) cah.Option {
 }
 
 // WhiteDeck changes the gamestate's white deck
-func (Options) WhiteDeck(wd []*cah.WhiteCard) cah.Option {
+func (Options) WhiteDeck(wd []cah.WhiteCard) cah.Option {
 	return func(s *cah.GameState) {
 		s.WhiteDeck = wd
-		shuffleW(&s.WhiteDeck)
+		shuffleW(s.WhiteDeck)
 	}
 }
 
 // BlackDeck changes the gamestate's black deck
-func (Options) BlackDeck(bd []*cah.BlackCard) cah.Option {
+func (Options) BlackDeck(bd []cah.BlackCard) cah.Option {
 	return func(s *cah.GameState) {
 		s.BlackDeck = bd
-		shuffleB(&s.BlackDeck)
+		shuffleB(s.BlackDeck)
 	}
 }
 
@@ -59,20 +59,20 @@ func (Options) MaxRounds(max int) cah.Option {
 	}
 }
 
-func shuffleB(cards *[]*cah.BlackCard) {
+func shuffleB(cards []cah.BlackCard) {
 	if cards == nil {
 		return
 	}
-	for i, j := range rand.Perm(len(*cards)) {
-		(*cards)[i], (*cards)[j] = (*cards)[j], (*cards)[i]
+	for i, j := range rand.Perm(len(cards)) {
+		cards[i], cards[j] = cards[j], cards[i]
 	}
 }
 
-func shuffleW(cards *[]*cah.WhiteCard) {
+func shuffleW(cards []cah.WhiteCard) {
 	if cards == nil {
 		return
 	}
-	for i, j := range rand.Perm(len(*cards)) {
-		(*cards)[i], (*cards)[j] = (*cards)[j], (*cards)[i]
+	for i, j := range rand.Perm(len(cards)) {
+		cards[i], cards[j] = cards[j], cards[i]
 	}
 }

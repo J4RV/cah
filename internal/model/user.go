@@ -17,9 +17,8 @@ type UserUsecases interface {
 }
 
 type User struct {
-	ID        int       `json:"id" db:"user"`
-	Username  string    `json:"username"`
-	Password  []byte    `json:"-"`
-	CreatedAt time.Time `json:"-" db:"created_at"`
-	// Games played, games won, cards played...
+	ID        int       `json:"id"       db:"user"`
+	Username  string    `json:"username" db:"username"`
+	Password  []byte    `json:"-"        db:"password"`
+	CreatedAt time.Time `json:"-"        db:"created_at"`
 }

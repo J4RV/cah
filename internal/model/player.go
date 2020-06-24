@@ -7,18 +7,18 @@ import (
 )
 
 type Player struct {
-	User             User         `json:"user" db:"user"`
-	Hand             []*WhiteCard `json:"hand" db:"hand"`
-	WhiteCardsInPlay []*WhiteCard `json:"whiteCardsInPlay"`
-	Points           []*BlackCard `json:"points" db:"points"`
+	User             User        `json:"user" db:"user"`
+	Hand             []WhiteCard `json:"hand" db:"hand"`
+	WhiteCardsInPlay []WhiteCard `json:"whiteCardsInPlay"`
+	Points           []BlackCard `json:"points" db:"points"`
 }
 
 func NewPlayer(u User) *Player {
 	return &Player{
 		User:             u,
-		Hand:             []*WhiteCard{},
-		WhiteCardsInPlay: []*WhiteCard{},
-		Points:           []*BlackCard{},
+		Hand:             []WhiteCard{},
+		WhiteCardsInPlay: []WhiteCard{},
+		Points:           []BlackCard{},
 	}
 }
 
@@ -31,8 +31,8 @@ func (p *Player) RemoveCardFromHand(i int) error {
 	return nil
 }
 
-func (p *Player) ExtractCardsFromHand(indexes []int) ([]*WhiteCard, error) {
-	ret := make([]*WhiteCard, len(indexes))
+func (p *Player) ExtractCardsFromHand(indexes []int) ([]WhiteCard, error) {
+	ret := make([]WhiteCard, len(indexes))
 
 	for iter, index := range indexes {
 		if index < 0 || index >= len(p.Hand) {
@@ -57,10 +57,10 @@ func (p *Player) ExtractCardsFromHand(indexes []int) ([]*WhiteCard, error) {
 	return ret, nil
 }
 
-func (p *Player) ExtractCardFromHand(i int) (*WhiteCard, error) {
+func (p *Player) ExtractCardFromHand(i int) (WhiteCard, error) {
 	ret, err := p.ExtractCardsFromHand([]int{i})
 	if err != nil {
-		return &WhiteCard{}, err
+		return WhiteCard{}, err
 	}
 	return ret[0], nil
 }

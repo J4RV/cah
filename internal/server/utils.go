@@ -31,14 +31,6 @@ func dereferenceWhiteCards(wcs []*cah.WhiteCard) []cah.WhiteCard {
 	return res
 }
 
-func dereferenceBlackCards(bcs []*cah.BlackCard) []cah.BlackCard {
-	res := make([]cah.BlackCard, len(bcs))
-	for i, bc := range bcs {
-		res[i] = *bc
-	}
-	return res
-}
-
 func requiredFormParams(params ...[]string) error {
 	for _, param := range params {
 		if len(param) == 0 {

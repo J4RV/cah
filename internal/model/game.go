@@ -36,8 +36,8 @@ type Game struct {
 // GAME STATE OPTIONS
 
 type GameOptions interface {
-	WhiteDeck([]*WhiteCard) Option
-	BlackDeck([]*BlackCard) Option
+	WhiteDeck([]WhiteCard) Option
+	BlackDeck([]BlackCard) Option
 	HandSize(size int) Option
 	RandomStartingCzar() Option
 	MaxRounds(max int) Option
