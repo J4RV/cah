@@ -8,11 +8,6 @@ type GameStore interface {
 	ByPhase(started, finished bool) ([]Game, error)
 }
 
-type GameStatsStore interface {
-	Create(GameStats) (GameStats, error)
-	ByGameID(int) (GameStats, error)
-}
-
 type GameUsecases interface {
 	Create(owner User, name, pass string) (Game, error)
 	ByID(int) (Game, error)
@@ -29,23 +24,13 @@ type GameUsecases interface {
 type Game struct {
 	ID       int
 	Owner    User
+	UserID   int
 	Users    []User `gorm:"many2many:game_users;"`
 	Name     string
 	Password string
 	StateID  int
 	Started  bool
 	Finished bool
-}
-
-type GameStats struct {
-	ID      int
-	GameID  int
-	Winners []Winner
-}
-
-type Winner struct {
-	User   User
-	Prizes []BlackCard
 }
 
 // GAME STATE OPTIONS

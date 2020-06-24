@@ -17,7 +17,7 @@ GET GAME STATE
 */
 
 type playerInfo struct {
-	ID               uint            `json:"id"`
+	ID               int             `json:"id"`
 	Name             string          `json:"name"`
 	HandSize         int             `json:"handSize"`
 	WhiteCardsInPlay int             `json:"whiteCardsInPlay"`
@@ -25,7 +25,7 @@ type playerInfo struct {
 }
 
 type fullPlayerInfo struct {
-	ID               uint            `json:"id"`
+	ID               int             `json:"id"`
 	Name             string          `json:"name"`
 	Hand             []cah.WhiteCard `json:"hand" db:"hand"`
 	WhiteCardsInPlay []cah.WhiteCard `json:"whiteCardsInPlay"`
@@ -33,7 +33,7 @@ type fullPlayerInfo struct {
 }
 
 type sinnerPlay struct {
-	ID         uint            `json:"id"`
+	ID         int             `json:"id"`
 	WhiteCards []cah.WhiteCard `json:"whiteCards"`
 }
 
@@ -41,7 +41,7 @@ type gameStateResponse struct {
 	ID              int            `json:"id"`
 	Phase           string         `json:"phase"`
 	Players         []playerInfo   `json:"players"`
-	CurrCzarID      uint           `json:"currentCzarID"`
+	CurrCzarID      int            `json:"currentCzarID"`
 	BlackCardInPlay cah.BlackCard  `json:"blackCardInPlay"`
 	BlackCardsLeft  int            `json:"blackCardsLeft"`
 	WhiteCardsLeft  int            `json:"whiteCardsLeft"`
@@ -243,7 +243,7 @@ CHOOSE WINNER
 */
 
 type chooseWinnerPayload struct {
-	Winner uint `json:"winner"`
+	Winner int `json:"winner"`
 }
 
 func chooseWinner(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
@@ -258,11 +258,11 @@ func chooseWinner(game cah.Game, user cah.User, w http.ResponseWriter, req *http
 	if err != nil {
 		return err
 	}
-	playerIndex, err := playerIndex(gs, user)
+	pid, err := playerIndex(gs, user)
 	if err != nil {
 		return err
 	}
-	if playerIndex != gs.CurrCzarIndex {
+	if pid != gs.CurrCzarIndex {
 		return errors.New("Only the Czar can choose the winner")
 	}
 	err = usecase.GameState.GiveBlackCardToWinner(payload.Winner, gs)

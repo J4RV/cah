@@ -82,20 +82,11 @@ type ingamePageCtx struct {
 }
 
 func ingamePageHandler(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
-	if game.Finished {
-		http.Redirect(w, req, fmt.Sprint("/games/", game.ID, "/final-stats"), http.StatusFound)
-		return nil
-	}
 	execTemplate(ingamePageTmpl, w, http.StatusOK, lobbyPageCtx{
 		LoggedUser: user,
 		Game:       game,
 		Flashes:    getFlashes(w, req),
 	})
-	return nil
-}
-
-func finalStatsPageHandler(game cah.Game, user cah.User, w http.ResponseWriter, req *http.Request) error {
-	execTemplate(finalStatsPageTmpl, w, http.StatusOK, nil)
 	return nil
 }
 

@@ -9,11 +9,11 @@ import (
 
 type userMemStore struct {
 	abstractMemStore
-	users map[uint]*cah.User
+	users map[int]*cah.User
 }
 
 var userStore = &userMemStore{
-	users: make(map[uint]*cah.User),
+	users: make(map[int]*cah.User),
 }
 
 // GetUserStore returns the global user store
@@ -28,12 +28,12 @@ func (store *userMemStore) Create(username string, password []byte) (cah.User, e
 	user.Username = username
 	user.Password = password
 	user.CreatedAt = time.Now()
-	user.ID = uint(store.nextID())
+	user.ID = store.nextID()
 	store.users[user.ID] = &user
 	return user, nil
 }
 
-func (store *userMemStore) ByID(id uint) (cah.User, error) {
+func (store *userMemStore) ByID(id int) (cah.User, error) {
 	store.Lock()
 	defer store.Unlock()
 	u, ok := store.users[id]

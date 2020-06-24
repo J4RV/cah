@@ -1,23 +1,25 @@
 package cah
 
 import (
-	"gorm.io/gorm"
+	"time"
 )
 
 type UserStore interface {
 	Create(username string, password []byte) (User, error)
 	ByName(name string) (User, error)
-	ByID(id uint) (User, error)
+	ByID(id int) (User, error)
 }
 
 type UserUsecases interface {
 	Register(username, password string) (User, error)
 	Login(name, pass string) (u User, ok bool)
-	ByID(id uint) (u User, ok bool)
+	ByID(id int) (u User, ok bool)
 }
 
 type User struct {
-	gorm.Model
-	Username string `json:"username" gorm:"unique;not null"`
-	Password []byte `json:"-" gorm:"default:null;not null"`
+	ID        int       `json:"id" db:"user"`
+	Username  string    `json:"username"`
+	Password  []byte    `json:"-"`
+	CreatedAt time.Time `json:"-" db:"created_at"`
+	// Games played, games won, cards played...
 }

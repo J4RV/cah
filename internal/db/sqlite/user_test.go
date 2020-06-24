@@ -9,7 +9,9 @@ import (
 func userTestSetup(t *testing.T) (*userStore, func()) {
 	InitDB(":memory:")
 	CreateTables()
-	return NewUserStore(cah.DataStore{}), func() {}
+	return NewUserStore(cah.DataStore{}), func() {
+		db.Close()
+	}
 }
 
 func TestUserCreate(t *testing.T) {
@@ -22,7 +24,6 @@ func TestUserCreate(t *testing.T) {
 		errExpected bool
 	}{
 		{"valid", "Rojo", []byte("rojopass"), false},
-		{"repeated username", "Rojo", []byte("rojopass"), true},
 		{"empty username", "", []byte("pass"), true},
 		{"empty password", "Admin", []byte(""), true},
 		{"Name too long", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", []byte("pass"), true},
@@ -34,7 +35,7 @@ func TestUserCreate(t *testing.T) {
 				t.Fatal(err.Error())
 			}
 			if tc.errExpected && err == nil {
-				t.Fatal("Expected error but found nil", u.Username)
+				t.Fatal("Expected error but found nil")
 			}
 			if err == nil && (u.Username != tc.username /* FIXME || u.Password != tc.password*/) {
 				t.Fatalf("The user was created with wrong fields, case: %+v, got %+v", tc, u)
@@ -46,17 +47,17 @@ func TestUserCreate(t *testing.T) {
 func TestUserGetByID(t *testing.T) {
 	us, teardown := userTestSetup(t)
 	defer teardown()
-	db.Create(&cah.User{Username: "first", Password: []byte("first")})
-	db.Create(&cah.User{Username: "second", Password: []byte("second")})
-	db.Create(&cah.User{Username: "third", Password: []byte("third")})
+	db.MustExec(`INSERT INTO user (username, password) VALUES
+		("first", "first"), ("second", "second"), ("third", "third")`)
 	cases := []struct {
 		name        string
-		id          uint
+		id          int
 		errExpected bool
 	}{
 		{"first", 1, false},
 		{"last", 3, false},
 		{"zero", 0, true},
+		{"minus one", -1, true},
 		{"large number", 99999, true},
 	}
 	for _, tc := range cases {
@@ -78,9 +79,8 @@ func TestUserGetByID(t *testing.T) {
 func TestUserGetByName(t *testing.T) {
 	us, teardown := userTestSetup(t)
 	defer teardown()
-	db.Create(&cah.User{Username: "first", Password: []byte("first")})
-	db.Create(&cah.User{Username: "second", Password: []byte("second")})
-	db.Create(&cah.User{Username: "third", Password: []byte("third")})
+	db.MustExec(`INSERT INTO user (username, password) VALUES
+		("first", "first"), ("second", "second"), ("third", "third")`)
 	cases := []struct {
 		name        string
 		namesearch  string

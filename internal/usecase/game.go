@@ -28,6 +28,7 @@ func (control gameController) Create(owner cah.User, name, pass string) (cah.Gam
 	}
 	game := cah.Game{
 		Owner:  owner,
+		UserID: owner.ID,
 		Name:   trimmed,
 		Users:  []cah.User{owner},
 	}
