@@ -1,0 +1,44 @@
+{{define "content"}}
+<div id="whites">
+  {{range .Whites}}
+    <div id="white-card" class="card white-card">
+      <p>{{.Text}}</p>
+      <p class="card-expansion-text">{{.Expansion}}</p>
+    </div>
+  {{end}}
+</div>
+<div id="blacks">
+  {{range .Blacks}}
+    <div id="black-card" class="card black-card">
+      <p>{{.Text}}</p>
+      <p class="card-expansion-text">{{.Expansion}}</p>
+    </div>
+  {{end}}
+</div>
+{{end}}
+
+{{define "style"}}
+<style>
+  #blacks {
+    width: 1600px;
+    display: grid;
+    grid-template-columns: repeat(10, 160px);
+  }
+  #whites {
+    width: 1600px;
+    display: grid;
+    grid-template-columns: repeat(10, 160px);
+  }
+  body {
+    background: green;
+  }
+</style>
+{{end}}
+
+{{define "script"}}
+<script>
+document.querySelectorAll(".card").forEach(function(elem){
+  elem.style.transform = `rotate(0)`;
+})
+</script>
+{{end}}

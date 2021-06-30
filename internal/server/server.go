@@ -85,6 +85,7 @@ func setRestRouterHandlers(r *mux.Router) {
 func setTemplateRouterHandlers(r *mux.Router) {
 	r.HandleFunc("/", loginPageHandler)
 	r.HandleFunc(loginPath, loginPageHandler)
+	r.HandleFunc("/tabletop-simulator/{expansion}", tabletopDeck)
 	r.Handle(gamesPath, loggedInHandler(gamesPageHandler))
 	r.Handle(gamesPath+"/create", loggedInHandler(createGamePageHandler))
 	r.Handle(gamesPath+"/{gameID}", gameHandler(lobbyPageHandler))

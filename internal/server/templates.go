@@ -24,6 +24,7 @@ const (
 	lobbyPageTmpl      tmplID = "Lobby"
 	ingamePageTmpl     tmplID = "Ingame"
 	notFoundPageTmpl   tmplID = "Not found"
+	tabletopDeckTmpl   tmplID = "Tabletop Deck"
 )
 
 var templateFiles = map[tmplID][]string{
@@ -54,6 +55,11 @@ var templateFiles = map[tmplID][]string{
 
 	createGamePageTmpl: append([]string{
 		"create-game.gohtml",
+		"components/logged-header.gohtml",
+	}, tmplBase...),
+
+	tabletopDeckTmpl: append([]string{
+		"tabletop-simulator-deck.gohtml",
 		"components/logged-header.gohtml",
 	}, tmplBase...),
 }

@@ -13,6 +13,11 @@ El dragón anciano.
 
 El cráter del invocador.
 
+Don comedia.
+Er carbo.
+El gafas.
+El dientes.
+
 El estremin.
 El groovy.
 La mochillo.

@@ -21,6 +21,7 @@ func init() {
 }
 
 func main() {
+	log.Println("starting...")
 	var cfg cah.Config
 	cfgData, err := ioutil.ReadFile("./config.yaml")
 	if err != nil {
@@ -53,7 +54,7 @@ func run(cfg cah.Config) {
 	loadCards(cfg.ExpansionsPath, usecases.Card)
 
 	fixture.PopulateUsers(usecases.User)
-	createTestGames(usecases)
+	//createTestGames(usecases)
 
 	server.Start(cfg, usecases)
 }
